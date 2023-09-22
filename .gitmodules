@@ -1,0 +1,8 @@
+[submodule "c/submodules/tiny-ntrip"]
+	path = rut955/submodules/tiny-ntrip
+	url = https://github.com/OssianEriksson/tiny-ntrip.git
+	branch = main
+[submodule "c/submodules/bldc_uart_comm_stm32f4_discovery"]
+	path = myrio/c/submodules/bldc_uart_comm_stm32f4_discovery
+	url = https://github.com/vedderb/bldc_uart_comm_stm32f4_discovery.git
+	branch = master

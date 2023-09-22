@@ -1,0 +1,54 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "MyRIO: CMake Generate Build Files",
+            "type": "shell",
+            "command": "cmake -G Ninja ${workspaceFolder}/myrio/c",
+            "options": {
+                "cwd": "${workspaceFolder}/myrio/c"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "MyRIO: Ninja",
+            "type": "shell",
+            "command": "ninja",
+            "options": {
+                "cwd": "${workspaceFolder}/myrio/c"
+            },
+            "problemMatcher": "$gcc"
+        },
+        {
+            "label": "MyRIO: Upload",
+            "type": "shell",
+            "command": ".\\upload-to-myrio.cmd",
+            "options": {
+                "cwd": "${workspaceFolder}/myrio/c"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "RUT955: Make",
+            "type": "shell",
+            "command": "make",
+            "options": {
+                "cwd": "${workspaceFolder}/rut955",
+                "env": {
+                    "STAGING_DIR": "${userHome}/build/openwrt/staging_dir/toolchain-mips_24kc_gcc-11.3.0_musl",
+                    "PATH": "${userHome}/build/openwrt/staging_dir/toolchain-mips_24kc_gcc-11.3.0_musl/bin:${env:PATH}"
+                }
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "RUT955: Upload",
+            "type": "shell",
+            "command": ".\\upload-to-rut955.cmd",
+            "options": {
+                "cwd": "${workspaceFolder}/rut955"
+            },
+            "problemMatcher": []
+        },
+    ]
+}
