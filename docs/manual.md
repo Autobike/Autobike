@@ -124,7 +124,7 @@ If you are running the code on new or factory reset bike hardware, make sure to 
 
 ### View the code
 
-Open git bash or cmd in a directory of your choosing (However, please **NOTE**: Do not use spaces in the directory path!) and enter
+Open git bash or cmd in a directory of your choice (However, please **NOTE**: Do not use spaces in the directory path!) and enter
 
 ```console
 git clone --recurse-submodules https://github.com/OssianEriksson/Autobike/
