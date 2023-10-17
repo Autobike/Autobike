@@ -17,7 +17,7 @@ As a hardware platform, ordinary commercial electrical bikes are used. These are
 - An I/O distribution board ("green PCB") through which the myRIO communicates with the other hardware
 - A RUT955, a 4G router providing RTK corrections to the u-blox board through an USB connection and WiFi for communication between a lab computer and the myRIO
 - A LiPo battery
-- A DC-DC converter. Link to the version used at the moment: (https://www.kjell.com/se/produkter/el-verktyg/elektronik/utvecklingskit/arduino/stromforsorjning/luxorparts-variabel-spanningsregulator-switchad-p87049?gclid=Cj0KCQjw4bipBhCyARIsAFsieCzwdijEBJX9JByShtxTk7AS-IC38OFnTbdzBY-Tw8amJZSjlFX43moaAjzkEALw_wcB)
+- A DC-DC converter. [The version used at the moment](https://www.kjell.com/se/produkter/el-verktyg/elektronik/utvecklingskit/arduino/stromforsorjning/luxorparts-variabel-spanningsregulator-switchad-p87049?gclid=Cj0KCQjw4bipBhCyARIsAFsieCzwdijEBJX9JByShtxTk7AS-IC38OFnTbdzBY-Tw8amJZSjlFX43moaAjzkEALw_wcB)
 
 ## The bikes
 
