@@ -165,14 +165,29 @@ In order to connect LabVIEW to the myRIO, from the Project Explorer window, righ
 
 Finally, close the myRIO Properties window, right click the "myRIO-1900" entry again and select "Connect". Depending on whether the program was already present on the myRIO or not, connection can take long time (5-10 min). During this time LabVIEW can stop responding - just be patient.
 
-### Uploading the reference trajectory and matrixes
+### Prepare a bike trajectory in Matlab, select correct bike parameters ###
 
-You have to upload the reference trajectory and the matrixes to the myRIO.
-Make sure the laptop is connected to the bike's myRIO.
+To run a test drive on a bike the following information needs to be specified;
+-	the reference trajectory stored in a file with default name `trajectorymat.csv`.
+-	The correct parameters describing the bike with default name `matrixmat.csv`.
+The file `startup_labview.m` is intended for this. You might need to edit the following information:
+-	on line 18 you can specify one of the pre-programmed bikes. Parameters for the specified bike are then set when the file is executed.
+-	On line 22-28 it is explained how the reference trajectory is defined.
+  
+#### Run startup_labview.m ####
 
-On the app FileZilla, enter :
+-	The reference trajectory is plotted and stored in `trajectorymat.csv` (depending on setting on row 19 it maybe already existed).
+-	An input window is opened, first field “Enter a bike type” you indicate a folder, which must exist in the folder `Parameters_matrixmat`. In that folder a file with bike parameters is created, default name `matrixmat.csv`.
 
-Host : 192.168.1.147
+### Upload the reference trajectory and bike parameters into myRio flash memory ###
+
+This is done using `FileZilla` and the two files `trajectorymat.csv` and `matrixmat.csv`.
+
+Make sure the laptop is connected to the bike's myRIO **by  ...**
+
+On the app `FileZilla`, enter :
+
+Host : 192.168.1.147 (isn't this number different depending on the bike?)
 
 Username : admin
 
@@ -182,29 +197,31 @@ Port : 22
 
 Then Quick Connect
 
-On the right side of your screen is all the data that is on the myRIO.
+On the right side of your screen is all the data that is on the myRIO. **include figure**
 You have to select the folder in which to upload the trajectory.
 
-Click on the folder with ".." twice : 
+Click on the folder with ".." twice **figure missing**: 
 <img src="https://github.com/ja125/Autobike_Summer2023/assets/135957410/fea09e9a-355c-467f-91af-6343afee8f77" alt="image" width="400">
 
 Then go to c > ni.rt > startup.
 
-There should be all the previously uploaded reference trajectories and matrixes (and logging data from previous tests) : 
+There should be all the previously uploaded reference trajectories and matrixes (and logging data from previous tests) **figure missing**: 
 <img width="479" alt="image" src="https://github.com/ja125/Autobike_Summer2023/assets/135957410/21ad66ff-ba36-44d3-b378-7bda9eeef21a">
 
 Now on the left part of your screen, select the pc folder where you have saved the trajectory files.
-We save the reference trajectory csv files in Github > Simulation > Traj_ref_test
+We save the reference trajectory csv files in Github > Simulation > Traj_ref_test ** ?? unclear, this is confusing considering the line above **
 The matrixes are in Github > Simulation > Parameters_matrixmat then go on the folder corresponding to the bike you're testing as well as the speed you want.
 
-Double click the csv files you want to upload to the myRIO : 
+Double click the csv files you want to upload to the myRIO **figure missing**: 
 <img width="550" alt="image" src="https://github.com/ja125/Autobike_Summer2023/assets/135957410/03908d58-08ba-4e6d-9b51-9ca795245ce4">
 
 This should upload the selected trajectory to the myRIO folder you opened previously on the right part of your screen.
 
+Subsequently, when running the LabVIEW programs (`calibration`, `configuration`, and `main`), check if the names of the two files that have just been loaded into memory match those of the file path controller on the front panel of each of the programs. If they do not, correct them to match. ** unclear, does bike parameters need to be set for each program? Why? **
+
 ### Date and time configuration on NI MAX
 
-Make sure that the laptop is connected to the myRIO through the Wifi. 
+Make sure that the laptop is connected to the myRIO through the Wifi **by  ...**
 To configure the date and time on the myRIO, go to the software `NI MAX`.
 Select `Remote Systems` then the bike you are testing (the green bike is `Autobike`, the red one is `Red Bike`). 
 At the bottom of the page, click `Time Settings` and configure the current date and time, then `Save`and `Refresh`.
@@ -213,7 +230,7 @@ At the bottom of the page, click `Time Settings` and configure the current date 
 
 After turning on the relevant parts of the bike and [connecting to the myRIO](#connect-myrio-to-your-pc), you should just be able to open one of the main VI:s (listed [here](../myrio/labview)) and run it.
 
-You also have to put the correct name of the csv files to have the matrixes and the reference trajectory, in all 3 of these VI:s :
+You also have to put the correct name of the csv files to have the matrixes and the reference trajectory, in all 3 of these VI:s **figure missing**:
 <img width="215" alt="image" src="https://github.com/ja125/Autobike_Summer2023/assets/135957410/5d0e71b8-6597-4c0f-bc3a-0bdac35080b6">
 
 In the following order, run the 3 VI:s :
