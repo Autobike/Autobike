@@ -47,9 +47,11 @@ A computer with the Windows operating system is currently required to use the bi
 1. Install [LabVIEW myRIO Software Bundle](https://www.ni.com/sv-se/support/downloads/software-products/download.labview-myrio-software-bundle.html#460313) (licences for Chalmers students may be found [here](https://studentfile.portal.chalmers.se/library/Labview/Software/)).
 2. Install [git](https://git-scm.com/downloads)
 3. Install [VS Code](https://code.visualstudio.com/Download)
-4. For building C code for myRIO (only get these if you know you need them): 
-   1. Install the 2018-2019 version of [GNU C & C++ Compile Tools for ARMv7](https://www.ni.com/sv-se/support/downloads/software-products/download.gnu-c---c---compile-tools-for-armv7.html#338448). Use [7-zip](https://www.7-zip.org/download.html) to extract the download to `C:\build\18.0\arm`. The resulting file structure should look as follows:  
-      ![](assets/20230201220413.png)
+4. For building C code for myRIO (only get these if you know you need them):
+
+   1. Windows: Install the 2018-2019 version of [GNU C & C++ Compile Tools for ARMv7](https://www.ni.com/sv-se/support/downloads/software-products/download.gnu-c---c---compile-tools-for-armv7.html#338448). Use [7-zip](https://www.7-zip.org/download.html) to extract the download to `C:\build\18.0\arm`. The resulting file structure should look as follows:  
+       ![](assets/20230201220413.png)  
+      Linux: Download the Linux version and install to `/usr/local/oecore-x86_64/`.
    2. Install [Ninja](https://ninja-build.org/). Make sure to add the folder where `ninja.exe` is located to your `PATH` (instructions [here](https://stackoverflow.com/a/44272417))
    3. Install [CMake](https://cmake.org/download/)
    
@@ -348,16 +350,37 @@ The ssh server (named sshd) can be enabled from the myRIO web interface or NI MA
 
 This project calls C code from LabVIEW code. The C code is compiled outside LabVIEW and then uploaded to the myRIO where the LabVIEW code can access it.
 
-Built C code should alreday be commited to the repo. To build yourself,
+Built C code should alreday be commited to the repo. To build yourself, first make sure you've cloned the repo with submodules (`git clone --recursive`). If not, run `git submodule update --init`. Then:
+
+#### Windows
 
 1. Press <kbd>F1</kbd>, select "Tasks: Run Task", then "MyRIO: CMake Generate Build Files"  
    This prepares the build configuration
 2. Press <kbd>F1</kbd>, select "Tasks: Run Task", then "MyRIO: Ninja"  
    This builds the C code
 
+#### Linux
+
+1. In `myrio/c/` run `cmake .; make`
+
+Optionally, on Linux you can use `cmake -Dlocal_build=ON .; make` to build for your computer, for testing locally.  
+_NOTE_ : You might need to delete `myrio/c/CMakeCache.txt` when changing the `local_build` option.  
+_TODO_ : update `myrio/c/CMakeLists.txt` to enable on Windows as well.  
+
 ### Uploading C code to the myRIO
 
-If the SSH server is not enabled on your myRIO (which it is not from the factory), you must [enable it](#myrio-ssh-configuration). Next, press <kbd>F1</kbd>, select "Tasks: Run Task", then "MyRIO: Upload". This task runs the batch script [`upload-to-myrio.cmd`](../myrio/c/upload-to-myrio.cmd) which uploads the built files from [`bin`](../myrio/c/bin/) to the myRIO via `scp`. In the output of the task, answer "Yes" to any questions and enter the password of the myRIO user when prompted.
+If the SSH server is not enabled on your myRIO (which it is not from the factory), you must [enable it](#myrio-ssh-configuration). Then:
+
+#### Windows
+
+- Press <kbd>F1</kbd>, select "Tasks: Run Task", then "MyRIO: Upload". This task runs the batch script [`upload-to-myrio.cmd`](../myrio/c/upload-to-myrio.cmd) which uploads the built files from [`bin`](../myrio/c/bin/) to the myRIO via `scp`. In the output of the task, answer "Yes" to any questions and enter the password of the myRIO user when prompted.
+
+#### Linux
+
+- In `myrio/c/` run `scp bin/*.so admin@<ip>:/usr/local/lib`, where `<ip>` is `192.168.1.147` for WLAN or `172.22.11.2` for USB.
+
+CMake also builds binaries for debugging to `myrio/c/debug_bin/` that can be uploaded and run on the myRIO over SSH.  
+_TODO_ : Make a shell script from `myrio/c/upload-to-myrio.cmd`.
 
 > [Related Documentation](https://nilrt-docs.ni.com/cross_compile/config_vs_code.html)
 
@@ -366,7 +389,7 @@ If the SSH server is not enabled on your myRIO (which it is not from the factory
 To create a new C block with your own code in LabVIEW, you need to do three things:
 
 1. Write your C code and put it in [`myrio/c/src`](../myrio/c/src/). See [`balancing_controller.c`](../myrio/c/src/balancing_controller.c) for a basic example. It is recommended to document your code in the style of [Doxygen](https://www.doxygen.nl/manual/docblocks.html).
-2. Create a CMake target for your C code by editing [`CMakeLists.txt`](../myrio/c/CMakeLists.txt). You want to add another entry like [this](https://github.com/Autobike/Autobike/blob/4d0ef337a8a46b9b6f841eca9678f09dc1901441/myrio/c/CMakeLists.txt#L29). The [CMake documentation](https://cmake.org/cmake/help/latest/) may be helpful if you are trying to do more advanced builds. After this step you should be able to build and upload your code using the same steps described [here](#building-c-code-for-myrio) and [here](#uploading-c-code-to-the-myrio).
+2. Create a CMake target for your C code by editing [`CMakeLists.txt`](../myrio/c/CMakeLists.txt). You want to add another entry like [this](https://github.com/Autobike/Autobike/blob/4d0ef337a8a46b9b6f841eca9678f09dc1901441/myrio/c/CMakeLists.txt#L48). The [CMake documentation](https://cmake.org/cmake/help/latest/) may be helpful if you are trying to do more advanced builds. After this step you should be able to build and upload your code using the same steps described [here](#building-c-code-for-myrio) and [here](#uploading-c-code-to-the-myrio).
 3. In LabVIEW, create a "Call Library Function Node" block and configure it to match your C library function. See [`Balancing Controller.vi`](../myrio/labview/Sub%20VIs/Balancing%20Controller/Balancing%20Controller.vi) for an example.
 
 ## ESCON

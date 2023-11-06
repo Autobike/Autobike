@@ -1,21 +1,39 @@
 {
-    "env": {
-        "compilerSysroots": "C:/build/18.0/arm/sysroots/"
+  "env": {
+    "compilerSysrootsWin": "C:/build/18.0/arm/sysroots/",
+    "compilerSysrootsLinux": "/usr/local/oecore-x86_64/sysroots"
+  },
+  "configurations": [
+    {
+      "name": "Linux",
+      "compilerPath": "${compilerSysrootsLinux}/x86_64-nilrtsdk-linux/usr/bin/arm-nilrt-linux-gnueabi/arm-nilrt-linux-gnueabi-gcc",
+      "compilerArgs": [
+        "--sysroot=${compilerSysrootsLinux}/cortexa9-vfpv3-nilrt-linux-gnueabi",
+        "-march=armv7-a",
+        "-mfpu=vfpv3",
+        "-mfloat-abi=softfp",
+        "-mcpu=cortex-a9"
+      ],
+      "includePath": [
+        "${compilerSysrootsLinux}/cortexa9-vfpv3-nilrt-linux-gnueabi/usr/include/",
+        "${workspaceFolder}/myrio/c/src/include",
+        "${workspaceFolder}/myrio/c/src/include/ChibiOS"
+      ],
+      "intelliSenseMode": "gcc-x86"
     },
-    "configurations": [
-        {
-            "name": "NI Linux Real-Time ARMv7",
-            "compilerPath": "${compilerSysroots}/i686-nilrtsdk-mingw32/usr/bin/arm-nilrt-linux-gnueabi/arm-nilrt-linux-gnueabi-gcc.exe",
-            "compilerArgs": [
-                "--sysroot=${compilerSysroots}/cortexa9-vfpv3-nilrt-linuxgnueabi/"
-            ],
-            "includePath": [
-                "${compilerSysroots}/cortexa9-vfpv3-nilrt-linux-gnueabi/usr/include/",
-                "${workspaceFolder}/myrio/c/src/include",
-                "${workspaceFolder}/myrio/c/src/include/ChibiOS"
-            ],
-            "intelliSenseMode": "gcc-x86"
-        }
-    ],
-    "version": 4
+    {
+      "name": "Win32",
+      "compilerPath": "${compilerSysrootsWin}/i686-nilrtsdk-mingw32/usr/bin/arm-nilrt-linux-gnueabi/arm-nilrt-linux-gnueabi-gcc.exe",
+      "compilerArgs": [
+        "--sysroot=${compilerSysrootsWin}/cortexa9-vfpv3-nilrt-linuxgnueabi/"
+      ],
+      "includePath": [
+        "${compilerSysrootsWin}/cortexa9-vfpv3-nilrt-linux-gnueabi/usr/include/",
+        "${workspaceFolder}/myrio/c/src/include",
+        "${workspaceFolder}/myrio/c/src/include/ChibiOS"
+      ],
+      "intelliSenseMode": "gcc-x86"
+    }
+  ],
+  "version": 4
 }

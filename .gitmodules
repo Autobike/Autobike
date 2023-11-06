@@ -6,3 +6,6 @@
 	path = myrio/c/submodules/bldc_uart_comm_stm32f4_discovery
 	url = https://github.com/vedderb/bldc_uart_comm_stm32f4_discovery.git
 	branch = master
+[submodule "myrio/c/submodules/qpSWIFT"]
+	path = myrio/c/submodules/qpSWIFT
+	url = git@github.com:qpSWIFT/qpSWIFT.git
