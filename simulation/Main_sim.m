@@ -37,7 +37,7 @@ clc;
 % bike model
     bike_model = 1; % 1 = non-linear model || 2 = linear model
 % 0 = Don't run test cases & save measurementdata in CSV || 1 = run test cases || 2 = generate ref yourself
-    Run_tests = 0; 
+    Run_tests = 1; 
 % Take estimated states from a specific time if wanted (0 == initial conditions are set to zero || 1 == take from an online test)
     init = 0;
     time_start = 14.001;         % what time do you want to take
@@ -75,10 +75,11 @@ elseif init == 0
         initial_state.roll = deg2rad(0);
         initial_state.roll_rate = deg2rad(0);
         initial_state.steering = deg2rad(0);
-        initial_state.x = 1;
+        initial_state.x = 0;
         initial_state.y = 0;
-        initial_state.heading = deg2rad(0);
+        initial_state.heading = deg2rad(180);
         initial_pose = [initial_state.x; initial_state.y; initial_state.heading];
+        initial_state_estimate = initial_state;
 else
     disp('Bad initialization');
 end
@@ -86,13 +87,13 @@ end
 %% Reference trajectory generation
 
 % SHAPE options: sharp_turn, line, infinite, circle, ascent_sin, smooth_curve
-type = 'circle';
+type = 'infinite';
 % Distance between points
-ref_dis = 0.5;
+ref_dis = 0.1;
 % Number# of reference points
-N = 80; 
+N = 50; 
 % Scale (only for infinite and circle)
-scale = 40; 
+scale = 40;
 
 [Xref,Yref,Psiref] = ReferenceGenerator(type,ref_dis,N,scale);
 
@@ -108,7 +109,7 @@ scale = 40;
 % traj = readtable('Traj_ref_test\trajectorymat_asta0_turn_left.csv');
 % traj = readtable('Traj_ref_test\trajectorymat_asta0_lat_right.csv');
 % traj = readtable('Traj_ref_test\trajectorymat_asta0_lat_left.csv');
-traj = readtable('Traj_ref_test\trajectorymat_asta0_circle_3_l.csv');
+% traj = readtable('Traj_ref_test\trajectorymat_asta0_circle_3_l.csv');
 % traj = readtable('trajectorymat.csv');
 
 % traj = readtable('Traj_ref_test\trajectorymat_foot_lat_right.csv');
@@ -119,11 +120,12 @@ traj = readtable('Traj_ref_test\trajectorymat_asta0_circle_3_l.csv');
 % traj = readtable('Traj_ref_test\trajectorymat_foot_lat_right.csv');
 % traj = readtable('Traj_ref_test\trajectorymat_foot_lat_left.csv');
 % traj = readtable('Traj_ref_test\trajectorymat_foot_circle_3_l.csv');
-traj = table2array(traj);
-traj = [traj(:,1)-traj(1,1), traj(:,2)-traj(1,2), traj(:,3)];
-Xref = traj(3:end,1);
-Yref = traj(3:end,2);
-Psiref = traj(3:end,3);
+
+%traj = table2array(traj);
+%traj = [traj(:,1)-traj(1,1), traj(:,2)-traj(1,2), traj(:,3)];
+%Xref = traj(3:end,1);
+%Yref = traj(3:end,2);
+%Psiref = traj(3:end,3);
 
 test_curve=[Xref,Yref,Psiref];
 Nn = size(test_curve,1); % needed for simulink
@@ -137,7 +139,7 @@ Nn = size(test_curve,1); % needed for simulink
 % end
 
 %% Reference test (warnings and initialization update)
-if ((Run_tests == 0 || Run_tests == 2) && init == 0)
+if ((Run_tests == 2) && init == 0)
 
 Output_reference_test = referenceTest(test_curve,hor_dis,Ts,initial_pose,v, ref_dis);
 
@@ -217,12 +219,12 @@ T = Rz*Ry*Rx;
 %% Balancing Controller
 
 % Outer loop -- Roll Tracking
-P_balancing_outer = 3.75;
+P_balancing_outer = 1.3;
 I_balancing_outer = 0.0;
 D_balancing_outer = 0.0;
 
 % Inner loop -- Balancing
-P_balancing_inner = 3.5;
+P_balancing_inner = 3;
 I_balancing_inner = 0;
 D_balancing_inner = 0;  
 
@@ -249,6 +251,89 @@ e1_max=abs(-k2*e2_max/k1);% k1,k2 has been known, so we can calculate e1_max
 
 % e2_max=deg2rad(30);
 % e1_max=abs(1000);
+
+%% MPC Trajectory controller
+max_permissible_e1=100;
+max_permissible_e2=100;
+a = lr;
+b = lr+lf;
+
+N_outer=100; %prediction horizont
+%penalty matrices 
+Q_outer=[1 0; 0 1]*1e-5;  % penalty on state deviation
+Pf_outer=[1 0; 0 1]*1;  % penalty on final prediction step, i.e. "how important to reach"
+R_outer=1;          % penalty on control signal 
+
+% Q_outer=eye(2)*1e-2;  % penalty on state deviation
+% Pf_outer=eye(2)*1e8;  % penalty on final prediction step, i.e. "how important to reach"
+% R_outer=2;            % penalty on control signal 
+
+% x=[e1 e2]'
+A_outer=[0 v;0 0];
+B_outer=[a*v/b;v/b];
+
+C_outer=eye(2);
+D_outer=zeros(1,2)';
+
+sys_outer = ss(A_outer,B_outer,C_outer,D_outer);
+
+% Discretization
+sys_dis_outer = c2d(sys_outer,Ts);
+Ad_outer = sys_dis_outer.A;
+Bd_outer = sys_dis_outer.B;
+Cd_outer = sys_dis_outer.C;
+Dd_outer = sys_dis_outer.D;
+
+%mpc 
+stateOfConstraint_outer=[1 0;
+                   -1 0;
+                   0 1;
+                   0 -1];
+stateConstraintVal_outer=[max_permissible_e1;
+                    max_permissible_e1;
+                    max_permissible_e2;
+                    max_permissible_e2];
+inputConstraint_outer=[1;
+                -1];
+
+inputConstraintVal_outer=deg2rad(20);%max_permissible_str-deg2rad(10); % harder constraint on outer?
+
+[rowInputConstraint_outer,colInputConstraint_outer]=size(inputConstraint_outer);
+[rowStateOfConstraint_outer,colStateOfConstraint_outer]=size(stateOfConstraint_outer);
+
+%Obs. constraints have the form Fx +Gu <=h, different from MPC course...
+%Size of F:
+%   - Cols: cols in x constr. times prediction steps (N) 
+%   - Rows: rows in x constr. times N + rows in u constr.
+%           times N
+F_outer=[kron([eye(N_outer)],stateOfConstraint_outer);
+    zeros(rowInputConstraint_outer*N_outer,colStateOfConstraint_outer*N_outer)];
+%Size of G:
+%   - Cols: cols in u constr. times N
+%   - Rows: rows in x constr. times N + rows in u constr.
+%           times N
+G_outer=[zeros(N_outer*rowStateOfConstraint_outer,N_outer);kron(eye(N_outer),[1; -1])];
+
+%Size of h_mpc:
+%   -Cols: 1
+%   -Rows: rows in x constr. times N + rows in u constr.
+%           times N
+h_mpc_outer=[kron([ones(1*N_outer,1)],stateConstraintVal_outer);
+    ones(N_outer*rowInputConstraint_outer,1)*inputConstraintVal_outer];
+
+mpc_outer_params=struct();
+mpc_outer_params.Ad=Ad_outer;
+mpc_outer_params.Bd=Bd_outer;
+mpc_outer_params.Cd=Cd_outer;
+mpc_outer_params.Dd=Dd_outer;
+mpc_outer_params.N=N_outer;
+mpc_outer_params.Q=Q_outer;
+mpc_outer_params.Pf=Pf_outer;
+mpc_outer_params.R=R_outer;
+mpc_outer_params.F=F_outer;
+mpc_outer_params.G=G_outer;
+mpc_outer_params.h=h_mpc_outer;
+
 
 %% Transfer function for heading in wrap traj
 %feed forward trasfer function for d_psiref to steering reference (steering contribution for heading changes)
@@ -371,18 +456,18 @@ if Run_tests == 1
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %TEST CASE 1 Sparse infinite
-disp('Test case 1: Sparse infinite')
+disp('Test case 1: Infinite')
 
 type = 'infinite';
-ref_dis = 0.5;
-N = 40; 
+ref_dis = 0.1;
+N = 100; 
 scale = 100; 
 [Xref,Yref,Psiref] = ReferenceGenerator(type,ref_dis,N,scale);
-test_curve=[Xref,Yref,Psiref];
-Nn = size(test_curve,1); % needed for simulink
+test_curve1=[Xref,Yref,Psiref];
+Nn = size(test_curve1,1); % needed for simulink
 
 %test reference
-Output_reference_test = referenceTest(test_curve,hor_dis,Ts,initial_pose,v,ref_dis);
+Output_reference_test = referenceTest(test_curve1,hor_dis,Ts,initial_pose,v,ref_dis);
 initial_state.x = Output_reference_test(1);
 initial_state.y = Output_reference_test(2);
 initial_state.heading = Output_reference_test(3);
@@ -406,11 +491,11 @@ ref_dis = 0.1;
 N = 1000; 
 scale = 100; 
 [Xref,Yref,Psiref] = ReferenceGenerator(type,ref_dis,N,scale);
-test_curve=[Xref,Yref,Psiref];
-Nn = size(test_curve,1); % needed for simulink
+test_curve2=[Xref,Yref,Psiref];
+Nn = size(test_curve2,1); % needed for simulink
 
 %test reference
-Output_reference_test = referenceTest(test_curve,hor_dis,Ts,initial_pose,v,ref_dis);
+Output_reference_test = referenceTest(test_curve2,hor_dis,Ts,initial_pose,v,ref_dis);
 initial_state.x = Output_reference_test(1);
 initial_state.y = Output_reference_test(2)-5;
 initial_state.heading = Output_reference_test(3)-pi/4;
@@ -434,11 +519,11 @@ ref_dis = 0.5;
 N = 100; 
 scale = 5; 
 [Xref,Yref,Psiref] = ReferenceGenerator(type,ref_dis,N,scale);
-test_curve=[Xref,Yref,Psiref];
-Nn = size(test_curve,1); % needed for simulink
+test_curve3=[Xref,Yref,Psiref];
+Nn = size(test_curve3,1); % needed for simulink
 
 %test reference
-Output_reference_test = referenceTest(test_curve,hor_dis,Ts,initial_pose,v,ref_dis);
+Output_reference_test = referenceTest(test_curve3,hor_dis,Ts,initial_pose,v,ref_dis);
 initial_state.x = Output_reference_test(1);
 initial_state.y = Output_reference_test(2);
 initial_state.heading = Output_reference_test(3);
@@ -457,16 +542,16 @@ end
 %TEST CASE 4 Sharp turn
 disp('Test case 4: Sharp turn')
 
-type = 'sharp_turn';
+type = 'line';
 ref_dis = 0.01;
 N = 2100; 
 scale = 10; 
 [Xref,Yref,Psiref] = ReferenceGenerator(type,ref_dis,N,scale);
-test_curve=[Xref,Yref,Psiref];
-Nn = size(test_curve,1); % needed for simulink
+test_curve4=[Xref,Yref,Psiref];
+Nn = size(test_curve4,1); % needed for simulink
 
 %test reference
-Output_reference_test = referenceTest(test_curve,hor_dis,Ts,initial_pose,v,ref_dis);
+Output_reference_test = referenceTest(test_curve4,hor_dis,Ts,initial_pose,v,ref_dis);
 initial_state.x = Output_reference_test(1);
 initial_state.y = Output_reference_test(2);
 initial_state.heading = Output_reference_test(3);
@@ -488,20 +573,20 @@ end
 if Run_tests == 1
     close all
     %Test case 1
-    Tnumber = 'Test case 1: Sparse infinite';
+    Tnumber = 'Test case 1: Infinite';
 
-        Plot_bikesimulation_results(Tnumber, Ts, test_curve, Results1, bike_params);
+        Plot_bikesimulation_results(Tnumber, Ts, test_curve1, Results1);
     %Test case 2 
     Tnumber = 'Test case 2: Large offset';
  
-        Plot_bikesimulation_results(Tnumber, Ts, test_curve, Results2, bike_params);
+        Plot_bikesimulation_results(Tnumber, Ts, test_curve2, Results2);
     %Test case 3    
     Tnumber = 'Test case 3: Small circle';
      
-        Plot_bikesimulation_results(Tnumber, Ts, test_curve, Results3, bike_params);
+        Plot_bikesimulation_results(Tnumber, Ts, test_curve3, Results3);
     %Test case 4 
     Tnumber = 'Test case 4: Sharp turn';
 
-        Plot_bikesimulation_results(Tnumber, Ts, test_curve, Results4, bike_params);
+        Plot_bikesimulation_results(Tnumber, Ts, test_curve4, Results4);
 
 end
