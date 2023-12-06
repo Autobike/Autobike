@@ -37,7 +37,7 @@ clc;
 % bike model
     bike_model = 1; % 1 = non-linear model || 2 = linear model
 % 0 = Don't run test cases & save measurementdata in CSV || 1 = run test cases || 2 = generate ref yourself
-    Run_tests = 1; 
+    Run_tests = 0; 
 % Take estimated states from a specific time if wanted (0 == initial conditions are set to zero || 1 == take from an online test)
     init = 0;
     time_start = 14.001;         % what time do you want to take
@@ -76,8 +76,8 @@ elseif init == 0
         initial_state.roll_rate = deg2rad(0);
         initial_state.steering = deg2rad(0);
         initial_state.x = 0;
-        initial_state.y = 0;
-        initial_state.heading = deg2rad(180);
+        initial_state.y = 5;
+        initial_state.heading = deg2rad(60);
         initial_pose = [initial_state.x; initial_state.y; initial_state.heading];
         initial_state_estimate = initial_state;
 else
@@ -87,11 +87,11 @@ end
 %% Reference trajectory generation
 
 % SHAPE options: sharp_turn, line, infinite, circle, ascent_sin, smooth_curve
-type = 'infinite';
+type = 'line';
 % Distance between points
-ref_dis = 0.1;
+ref_dis = 0.5;
 % Number# of reference points
-N = 50; 
+N = 100; 
 % Scale (only for infinite and circle)
 scale = 40;
 
@@ -260,8 +260,8 @@ b = lr+lf;
 
 N_outer=100; %prediction horizont
 %penalty matrices 
-Q_outer=[1 0; 0 1]*1e-5;  % penalty on state deviation
-Pf_outer=[1 0; 0 1]*1;  % penalty on final prediction step, i.e. "how important to reach"
+Q_outer=[1 0; 0 0.01]*1e-2;  % penalty on state deviation
+Pf_outer=[1 0; 0 100];  % penalty on final prediction step, i.e. "how important to reach"
 R_outer=1;          % penalty on control signal 
 
 % Q_outer=eye(2)*1e-2;  % penalty on state deviation
@@ -489,7 +489,7 @@ disp('Test case 2: Large offset');
 type = 'line';
 ref_dis = 0.1;
 N = 1000; 
-scale = 100; 
+scale = 100;
 [Xref,Yref,Psiref] = ReferenceGenerator(type,ref_dis,N,scale);
 test_curve2=[Xref,Yref,Psiref];
 Nn = size(test_curve2,1); % needed for simulink
@@ -539,14 +539,16 @@ if Results3.stop.Data(end) == 1
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
-%TEST CASE 4 Sharp turn
-disp('Test case 4: Sharp turn')
+%TEST CASE 4 Large disturbance
+disp('Test case 4: Large disturbance')
 
 type = 'line';
 ref_dis = 0.01;
 N = 2100; 
 scale = 10; 
 [Xref,Yref,Psiref] = ReferenceGenerator(type,ref_dis,N,scale);
+Yref(1050) = 300;
+
 test_curve4=[Xref,Yref,Psiref];
 Nn = size(test_curve4,1); % needed for simulink
 
