@@ -10,10 +10,10 @@ clc;
 pred_horiz_span = [100];
 % Pf and Q weights are relative to R, which is kept constant at 1
 % e1 and e2 spans for Pf and Q must have same lengths
-Pf_e1_span = [1,10,20];
-Pf_e2_span = [100,100,100];
-Q_e1_span = [1,10]*1e-2;
-Q_e2_span = [1,1]*1e-2;
+Pf_e1_span = [1,2,3,4,5,10,20,30,60,100];
+Pf_e2_span = [100,100,100,100,100,100,100,100,100,100];
+Q_e1_span = [1]*1e-2;
+Q_e2_span = [1]*1e-2;
 
 %% Simulation Settings and Bike Parameters
 % General Parameters
@@ -256,11 +256,11 @@ end
 Kalman_gain2 = Kalman_gain1(4:7,3:7);
 %% Start the Simulation
 %% MPC Trajectory controller
-foldername = "batch_simulations/Simulations on " + string(datestr(now,30));
-mkdir(foldername)
-filename_trajectory = foldername + '/trajectorymat.csv'; % Specify the filename
+foldername = "Simulations on " + string(datestr(now,30));
+mkdir("batch_simulations/" + foldername)
+filename_trajectory = "batch_simulations/" + foldername + '/trajectorymat.csv'; % Specify the filename
 csvwrite(filename_trajectory, test_curve); % Write the matrix to the CSV file
-disp("Running " + length(pred_horiz_span)*length(Pf_e1_span)*length(Q_e1_span) + " simulations.")
+disp("Running " + (length(pred_horiz_span)*length(Pf_e1_span)*length(Q_e1_span)+1) + " simulations.")
 simN = 1;
 for i=1:length(pred_horiz_span)
     for j=1:length(Pf_e1_span)
@@ -351,7 +351,7 @@ for i=1:length(pred_horiz_span)
             toc
             % save the states for offline analysis
             bikedata_simulation_bikestates = array2table([Results.bike_states.Time Results.bike_states.Data, Results.stop.Data, Results.ids.Data]);
-            filename_simulation_bikestates = foldername + "/bikedata_simulation_real_states"+string(i)+string(j)+string(k)+".csv"; % Specify the filename
+            filename_simulation_bikestates = "batch_simulations/" + foldername + "/bikedata_simulation_real_states"+string(i)+string(j)+string(k)+".csv"; % Specify the filename
             bikedata_simulation_bikestates.Properties.VariableNames(1:10) = {'Time', 'X', 'Y', 'Psi', 'Roll', 'Rollrate', 'Delta', 'Velocity', 'Stop', 'Total_idx'};
             writetable(bikedata_simulation_bikestates ,filename_simulation_bikestates);
             
@@ -360,7 +360,7 @@ for i=1:length(pred_horiz_span)
                 Results.delta_e1.Data Results.delta_e2.Data Results.delta_psi.Data Results.delta_ref.Data Results.e1.Data Results.e2.Data ...
                 Results.error1.Data Results.error2.Data Results.estimated_states.Data Results.measurements.Data Results.refRoll.Data ...
                 Results.ref_states.Data Results.roll_ref.Data Results.steerrate_input.Data]);
-            filename_simulation= foldername + "/bikedata_simulation"+string(i)+string(j)+string(k)+".csv"; % Specify the filename
+            filename_simulation= "batch_simulations/" + foldername + "/bikedata_simulation"+string(i)+string(j)+string(k)+".csv"; % Specify the filename
             bikedata_simulation.Properties.VariableNames(1:35) = {'Time', 'Closestpoint_idx', 'Closestpoint_heading_idx', 'delta_e1', 'delta_e2', 'delta_psi',...
                 'delta_ref', 'e1', 'e2', 'error1', 'error2', 'X_est', 'Y_est', 'Psi_est', 'Roll_est', 'Rollrate_est', 'Delta_est', 'Velocity_est', 'X_meas',...
                 'Y_meas', 'Psi_meas', 'Roll_meas', 'Rollrate_meas', 'Delta_meas', 'Velocity_meas', 'refRoll', 'X_ref', 'Y_ref', 'Psi_ref', 'Roll_ref',...
@@ -370,8 +370,51 @@ for i=1:length(pred_horiz_span)
         end
     end
 end
+%% Simulate LQR for comparison
+disp("Running simulation " + simN + ", LQR comparison")
+model = 'Main_bikesim_old';
+% Open the Simulink Model
+open([model '.slx']);
+% Choose the solver
+set_param(model,'AlgebraicLoopSolver','TrustRegion');
+
+tic
+try Results = sim(model);
+    catch error_details %note: the model has runned for one time here
+end
+toc
+% save the states for offline analysis
+bikedata_simulation_bikestates = array2table([Results.bike_states.Time Results.bike_states.Data, Results.stop.Data, Results.ids.Data, Results.closest_point.Data]);
+filename_simulation_bikestates = "batch_simulations/" + foldername + "/bikedata_simulation_real_statesLQR.csv"; % Specify the filename
+bikedata_simulation_bikestates.Properties.VariableNames(1:11) = {'Time', 'X', 'Y', 'Psi', 'Roll', 'Rollrate', 'Delta', 'Velocity', 'Stop', 'Closestpoint_idx', 'Total_idx'};
+writetable(bikedata_simulation_bikestates ,filename_simulation_bikestates);
+
+% save measurement data and estimations for offline analysis
+bikedata_simulation = array2table([Results.estimated_states.Time Results.closestpoint_heading.Data ...
+    Results.delta_e1.Data Results.delta_e2.Data Results.delta_psi.Data Results.delta_ref.Data Results.e1.Data Results.e2.Data ...
+    Results.error1.Data Results.error2.Data Results.estimated_states.Data Results.measurements.Data Results.refRoll.Data ...
+    Results.ref_states.Data Results.roll_ref.Data Results.steerrate_input.Data]);
+filename_simulation= "batch_simulations/" + foldername + "/bikedata_simulationLQR.csv"; % Specify the filename
+bikedata_simulation.Properties.VariableNames(1:34) = {'Time', 'Closestpoint_heading_idx', 'delta_e1', 'delta_e2', 'delta_psi',...
+    'delta_ref', 'e1', 'e2', 'error1', 'error2', 'X_est', 'Y_est', 'Psi_est', 'Roll_est', 'Rollrate_est', 'Delta_est', 'Velocity_est', 'X_meas',...
+    'Y_meas', 'Psi_meas', 'Roll_meas', 'Rollrate_meas', 'Delta_meas', 'Velocity_meas', 'refRoll', 'X_ref', 'Y_ref', 'Psi_ref', 'Roll_ref',...
+    'Rollrate_ref', 'Delta_ref', 'Velocity_ref', 'roll_ref', 'Steerrate_input'};
+writetable(bikedata_simulation,filename_simulation);
+simN = simN + 1;
+
+% Save simulation settings
+sim_tbl = struct();
+sim_tbl.pred_horiz_span = pred_horiz_span;
+sim_tbl.Pf_e1_span = Pf_e1_span;
+sim_tbl.Pf_e2_span = Pf_e2_span;
+sim_tbl.Q_e1_span = Q_e1_span;
+sim_tbl.Q_e2_span = Q_e2_span;
+
+save("batch_simulations/" + foldername + "/tuning_setup.mat", "sim_tbl" )
+
+%% Plot simulation results
 disp('Done, plotting...')
-Plot_MPC_tuning_results(pred_horiz_span,Pf_e1_span,Pf_e2_span,Q_e1_span,Q_e2_span,Ts,foldername)
+Plot_MPC_tuning_results(Ts,foldername)
 % Simulation Messages and Warnings
 % if Results.stop.Data(end) == 1
 %     disp('Message: End of the trajectory has been reached');
