@@ -346,7 +346,7 @@ The ssh server (named sshd) can be enabled from the myRIO web interface or NI MA
 
 ### Building C code for myRIO
 
-This project calls C code from LabVIEW code. The C code is compiled outside LabVIEW and then uploaded to the myRIO where the LabVIEW code can access it.
+This project calls C code from LabVIEW code. The C code is compiled outside LabVIEW and then uploaded to the myRIO where the LabVIEW code can access it. Writing and compiling C-code is done on an IDE. The commands bellow refer to if this is done in VisualStudio.
 
 Built C code should alreday be commited to the repo. To build yourself,
 
