@@ -221,7 +221,7 @@ Subsequently, when running the LabVIEW programs (`calibration`, `configuration`,
 
 ### Date and time configuration on NI MAX
 
-Make sure that the laptop is connected to the myRIO through the Wifi **by  ...**
+Log files are named according to date and time, hence, it is convinient to have it set correctly. Make sure that the laptop is connected to the myRIO through the Wifi **by  ...**
 To configure the date and time on the myRIO, go to the software `NI MAX`.
 Select `Remote Systems` then the bike you are testing (the green bike is `Autobike`, the red one is `Red Bike`). 
 At the bottom of the page, click `Time Settings` and configure the current date and time, then `Save`and `Refresh`.
