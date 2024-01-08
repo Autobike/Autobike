@@ -7,11 +7,11 @@ close all;
 clc;
 
 % Specify parameters to vary
-pred_horiz_span = [100];
+pred_horiz_span = [130];
 % Pf and Q weights are relative to R, which is kept constant at 1
 % e1 and e2 spans for Pf and Q must have same lengths
-Pf_e1_span = [1,2,3,4,5,10,20,30,60,100];
-Pf_e2_span = [100,100,100,100,100,100,100,100,100,100];
+Pf_e1_span = [3];
+Pf_e2_span = [100];
 Q_e1_span = [1]*1e-2;
 Q_e2_span = [1]*1e-2;
 
@@ -96,11 +96,11 @@ end
 %% Reference trajectory generation
 
 % SHAPE options: sharp_turn, line, infinite, circle, ascent_sin, smooth_curve
-type = 'line';
+type = 'infinite';
 % Distance between points
-ref_dis = 0.5;
+ref_dis = 0.1;
 % Number# of reference points
-N = 70; 
+N = 100; 
 % Scale (only for infinite and circle)
 scale = 40;
 

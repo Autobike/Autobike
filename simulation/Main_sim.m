@@ -87,11 +87,11 @@ end
 %% Reference trajectory generation
 
 % SHAPE options: sharp_turn, line, infinite, circle, ascent_sin, smooth_curve
-type = 'line';
+type = 'infinite';
 % Distance between points
-ref_dis = 0.5;
+ref_dis = 0.1;
 % Number# of reference points
-N = 100; 
+N = 100;
 % Scale (only for infinite and circle)
 scale = 40;
 
@@ -258,10 +258,10 @@ max_permissible_e2=100;
 a = lr;
 b = lr+lf;
 
-N_outer=100; %prediction horizont
+N_outer=130; %prediction horizont
 %penalty matrices 
-Q_outer=[1 0; 0 0.01]*1e-2;  % penalty on state deviation
-Pf_outer=[1 0; 0 100];  % penalty on final prediction step, i.e. "how important to reach"
+Q_outer=[1 0; 0 1]*1e-2;  % penalty on state deviation
+Pf_outer=[3 0; 0 100];  % penalty on final prediction step, i.e. "how important to reach"
 R_outer=1;          % penalty on control signal 
 
 % Q_outer=eye(2)*1e-2;  % penalty on state deviation
