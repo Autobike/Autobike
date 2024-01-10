@@ -2,7 +2,7 @@
 
 set(0,'defaulttextinterpreter','none');
 dbclear all;
-clear;
+clearvars -except init traj index Data_sim;
 close all;
 clc;
 
@@ -39,7 +39,9 @@ clc;
 % 0 = Don't run test cases & save measurementdata in CSV || 1 = run test cases || 2 = generate ref yourself
     Run_tests = 0; 
 % Take estimated states from a specific time if wanted (0 == initial conditions are set to zero || 1 == take from an online test)
-    init = 0;
+    if exist('init','var') ~= 1
+        init = 0;
+    end
     time_start = 14.001;         % what time do you want to take
 
 %% Initial states
@@ -47,8 +49,8 @@ clc;
 if init == 1
 
 %     data_lab = readtable('Logging_data\Test_session_14_06\data_8.csv');
-data_lab = readtable('Logging_data\Test_session_27_06\data_15.csv');
-
+% data_lab = readtable('Logging_data\Test_session_27_06\data_15.csv');
+data_lab = Data_sim;
     % Delete the data before reseting the trajectory and obtain X/Y position
     reset_traj = find(data_lab.ResetTraj==1,1,'last');
     data_lab(1:reset_traj,:) = [];
@@ -62,7 +64,9 @@ data_lab = readtable('Logging_data\Test_session_27_06\data_15.csv');
     % Obtain the relative time of the data
 %     Y = round(X,N) 
     data_lab.Time = round((data_lab.Time_ms_- data_lab.Time_ms_(1))*0.001, 4);
-    index = find(data_lab.Time == time_start);
+    if exist('index','var') ~= 1
+        index = find(data_lab.Time == time_start);
+    end
 
     initial_state.roll = data_lab.StateEstimateRoll_rad_(index);
     initial_state.roll_rate = data_lab.StateEstimateRollrate_rad_s_(index);
@@ -94,15 +98,17 @@ ref_dis = 0.1;
 N = 100;
 % Scale (only for infinite and circle)
 scale = 40;
+% Angle [deg] (only for sharp turn)
+angle = 60;
 
-[Xref,Yref,Psiref] = ReferenceGenerator(type,ref_dis,N,scale);
+[Xref,Yref,Psiref] = ReferenceGenerator(type,ref_dis,N,scale,angle);
 
 % Use a generated trajectory
 % traj = readtable('Traj_ref_test\trajectorymat_asta0_lat_right.csv');
 % traj = readtable('Traj_ref_test\trajectorymat_asta0_line.csv');
 % traj = readtable('Traj_ref_test\trajectorymat_asta0_infinite.csv');
 % traj = readtable('Traj_ref_test\trajectorymat_asta0_infinite_35.csv');
-% traj = readtable('Traj_ref_test\trajectorymat_asta0_infinite_30.csv');
+%traj = readtable('Traj_ref_test\trajectorymat_asta0_infinite_30.csv');
 % traj = readtable('Traj_ref_test\trajectorymat_asta0_infinite_25.csv');
 % traj = readtable('Traj_ref_test\trajectorymat_asta0_infinite_20.csv');
 % traj = readtable('Traj_ref_test\trajectorymat_asta0_turn_right.csv');
@@ -120,12 +126,21 @@ scale = 40;
 % traj = readtable('Traj_ref_test\trajectorymat_foot_lat_right.csv');
 % traj = readtable('Traj_ref_test\trajectorymat_foot_lat_left.csv');
 % traj = readtable('Traj_ref_test\trajectorymat_foot_circle_3_l.csv');
+if exist('traj','var') == 1
+    traj = table2array(traj);
+    traj = [traj(:,1)-traj(1,1), traj(:,2)-traj(1,2), traj(:,3)];
+    Xref = traj(3:end,1);
+    Yref = traj(3:end,2);
+    Psiref = traj(3:end,3);
+end
 
-%traj = table2array(traj);
-%traj = [traj(:,1)-traj(1,1), traj(:,2)-traj(1,2), traj(:,3)];
-%Xref = traj(3:end,1);
-%Yref = traj(3:end,2);
-%Psiref = traj(3:end,3);
+
+% traj = table2array(traj);
+% traj = [traj(:,1)-traj(1,1), traj(:,2)-traj(1,2), traj(:,3)];
+% Xref = traj(3:end,1);
+% Yref = traj(3:end,2);
+% Psiref = traj(3:end,3);
+% traj
 
 test_curve=[Xref,Yref,Psiref];
 Nn = size(test_curve,1); % needed for simulink
@@ -222,6 +237,7 @@ T = Rz*Ry*Rx;
 P_balancing_outer = 1.3;
 I_balancing_outer = 0.0;
 D_balancing_outer = 0.0;
+
 
 % Inner loop -- Balancing
 P_balancing_inner = 3;

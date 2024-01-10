@@ -85,8 +85,8 @@ elseif init == 0
         initial_state.roll_rate = deg2rad(0);
         initial_state.steering = deg2rad(0);
         initial_state.x = 0;
-        initial_state.y = 5;
-        initial_state.heading = deg2rad(60);
+        initial_state.y = 0;
+        initial_state.heading = deg2rad(0);
         initial_pose = [initial_state.x; initial_state.y; initial_state.heading];
         initial_state_estimate = initial_state;
 else
@@ -96,15 +96,17 @@ end
 %% Reference trajectory generation
 
 % SHAPE options: sharp_turn, line, infinite, circle, ascent_sin, smooth_curve
-type = 'infinite';
+type = 'sharp_turn';
 % Distance between points
-ref_dis = 0.1;
+ref_dis = 0.5;
 % Number# of reference points
-N = 100; 
+N = 70;
 % Scale (only for infinite and circle)
 scale = 40;
+% Angle [deg] (only for sharp turn)
+angle = 60;
 
-[Xref,Yref,Psiref] = ReferenceGenerator(type,ref_dis,N,scale);
+[Xref,Yref,Psiref] = ReferenceGenerator(type,ref_dis,N,scale,angle);
 
 test_curve=[Xref,Yref,Psiref];
 Nn = size(test_curve,1); % needed for simulink
