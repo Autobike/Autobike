@@ -44,7 +44,7 @@ Much of the work in the project is carried out as part of master's or bachelor's
 
 Modification to the electronics is carried out in the caselab at Chalmers.
 
-The software of the bikes is written in LabVIEW, with heavy use of C code which is called from within LabVIEW. In particular, C is used for implementing control algorithms, while LabVIEW is used for communication with sensors and motor controllers, timing and logging. For developing new software features, typically the algorithms will first be tested using MATLAB and Simulink. A Simulink model of the bike exists, but is not present in this repository. Then the algorithm is transfered to C code and verified on the bikes. The surrounding LabVIEW framework is also updated if neccessary.
+The software of the bikes is written in LabVIEW, with heavy use of C code which is called from within LabVIEW. In particular, C is used for implementing control algorithms, while LabVIEW is used for communication with sensors and motor controllers, timing and logging. For developing new software features, typically the algorithms will first be tested using MATLAB and Simulink. A Simulink model of the bike exists in this repository, `Main_bikesim.slx`, a quick startup guide for the simulation is found in the manual. Then the algorithm is transfered to C code and verified on the bikes. The surrounding LabVIEW framework is also updated if neccessary.
 
 ## Papers and reports
 
