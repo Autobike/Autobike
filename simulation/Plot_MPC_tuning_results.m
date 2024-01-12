@@ -1,15 +1,15 @@
 function [] = Plot_MPC_tuning_results(Ts, foldername)
 % Trajectory
-load("batch_simulations\" + foldername + "\tuning_setup.mat", "sim_tbl")
+load("batch_simulations/" + foldername + "/tuning_setup.mat", "sim_tbl")
 pred_horiz_span = sim_tbl.pred_horiz_span;
 Pf_e1_span = sim_tbl.Pf_e1_span;
 Pf_e2_span = sim_tbl.Pf_e2_span;
 Q_e1_span = sim_tbl.Q_e1_span;
 Q_e2_span = sim_tbl.Q_e2_span;
-foldername = "batch_simulations\" + foldername;
-simulation_real_states_LQR = readtable(foldername + "\bikedata_simulation_real_statesLQR");
-simulation_meas_states_LQR = readtable(foldername + "\bikedata_simulationLQR");
-test_curve = readtable(foldername +"\trajectorymat.csv");
+foldername = "batch_simulations/" + foldername;
+simulation_real_states_LQR = readtable(foldername + "/bikedata_simulation_real_statesLQR");
+simulation_meas_states_LQR = readtable(foldername + "/bikedata_simulationLQR");
+test_curve = readtable(foldername +"/trajectorymat.csv");
 
 % Only trajectory
 figure('Name',"Trajectory plot",'Position',[0 0 1920 1080]);
@@ -29,8 +29,8 @@ legend_cell{end+1} = "Estimated: LQR";
 for i=1:length(pred_horiz_span)
     for j=1:length(Pf_e1_span)
         for k=1:length(Q_e1_span)
-            simulation_real_states = readtable(foldername + "\bikedata_simulation_real_states"+string(i)+string(j)+string(k));
-            simulation_meas_states = readtable(foldername + "\bikedata_simulation"+string(i)+string(j)+string(k));
+            simulation_real_states = readtable(foldername + "/bikedata_simulation_real_states"+string(i)+string(j)+string(k));
+            simulation_meas_states = readtable(foldername + "/bikedata_simulation"+string(i)+string(j)+string(k));
             ax.ColorOrderIndex = (length(legend_cell)-1)/2+2;
             plot3(simulation_real_states.X,simulation_real_states.Y,simulation_real_states.Time);
             ax.ColorOrderIndex = (length(legend_cell)-1)/2+2;
@@ -69,8 +69,8 @@ legend_cell{end+1} = "Estimated: LQR";
 for i=1:length(pred_horiz_span)
     for j=1:length(Pf_e1_span)
         for k=1:length(Q_e1_span)
-            simulation_real_states = readtable(foldername + "\bikedata_simulation_real_states"+string(i)+string(j)+string(k));
-            simulation_meas_states = readtable(foldername + "\bikedata_simulation"+string(i)+string(j)+string(k));
+            simulation_real_states = readtable(foldername + "/bikedata_simulation_real_states"+string(i)+string(j)+string(k));
+            simulation_meas_states = readtable(foldername + "/bikedata_simulation"+string(i)+string(j)+string(k));
             ax.ColorOrderIndex = (length(legend_cell)-1)/2+2;
             plot3(simulation_real_states.X,simulation_real_states.Y,simulation_real_states.Time);
             ax.ColorOrderIndex = (length(legend_cell)-1)/2+2;
@@ -101,7 +101,7 @@ m = m + 1;
 for i=1:length(pred_horiz_span)
     for j=1:length(Pf_e1_span)
         for k=1:length(Q_e1_span)
-            simulation_meas_states = readtable(foldername + "\bikedata_simulation"+string(i)+string(j)+string(k));
+            simulation_meas_states = readtable(foldername + "/bikedata_simulation"+string(i)+string(j)+string(k));
             ax.ColorOrderIndex = m;
             plot(simulation_meas_states.Time, simulation_meas_states.error1);
             m = m + 1;
@@ -126,7 +126,7 @@ m = m + 1;
 for i=1:length(pred_horiz_span)
     for j=1:length(Pf_e1_span)
         for k=1:length(Q_e1_span)
-            simulation_meas_states = readtable(foldername + "\bikedata_simulation"+string(i)+string(j)+string(k));
+            simulation_meas_states = readtable(foldername + "/bikedata_simulation"+string(i)+string(j)+string(k));
             ax.ColorOrderIndex = m;
             plot(simulation_meas_states.Time, rad2deg(simulation_meas_states.error2));
             m = m + 1;
@@ -151,7 +151,7 @@ m = m + 1;
 for i=1:length(pred_horiz_span)
     for j=1:length(Pf_e1_span)
         for k=1:length(Q_e1_span)
-            simulation_meas_states = readtable(foldername + "\bikedata_simulation"+string(i)+string(j)+string(k));
+            simulation_meas_states = readtable(foldername + "/bikedata_simulation"+string(i)+string(j)+string(k));
             ax.ColorOrderIndex = m;
             plot(simulation_meas_states.Time, rad2deg(simulation_meas_states.Steerrate_input));
             m = m + 1;
@@ -185,8 +185,8 @@ legend_cell{end+1} = "Estimated X: LQR";
 for i=1:length(pred_horiz_span)
     for j=1:length(Pf_e1_span)
         for k=1:length(Q_e1_span)
-            simulation_real_states = readtable(foldername + "\bikedata_simulation_real_states"+string(i)+string(j)+string(k));
-            simulation_meas_states = readtable(foldername + "\bikedata_simulation"+string(i)+string(j)+string(k));
+            simulation_real_states = readtable(foldername + "/bikedata_simulation_real_states"+string(i)+string(j)+string(k));
+            simulation_meas_states = readtable(foldername + "/bikedata_simulation"+string(i)+string(j)+string(k));
             ax.ColorOrderIndex = length(legend_cell)/2+2;
             plot(simulation_real_states.Time, simulation_real_states.X);
             ax.ColorOrderIndex = length(legend_cell)/2+2;
@@ -217,8 +217,8 @@ m = m + 1;
 for i=1:length(pred_horiz_span)
     for j=1:length(Pf_e1_span)
         for k=1:length(Q_e1_span)
-            simulation_real_states = readtable(foldername + "\bikedata_simulation_real_states"+string(i)+string(j)+string(k));
-            simulation_meas_states = readtable(foldername + "\bikedata_simulation"+string(i)+string(j)+string(k));
+            simulation_real_states = readtable(foldername + "/bikedata_simulation_real_states"+string(i)+string(j)+string(k));
+            simulation_meas_states = readtable(foldername + "/bikedata_simulation"+string(i)+string(j)+string(k));
             ax.ColorOrderIndex = m;
             plot(simulation_real_states.Time, rad2deg(simulation_real_states.Roll));
             ax.ColorOrderIndex = m;
@@ -247,8 +247,8 @@ m = m + 1;
 for i=1:length(pred_horiz_span)
     for j=1:length(Pf_e1_span)
         for k=1:length(Q_e1_span)
-            simulation_real_states = readtable(foldername + "\bikedata_simulation_real_states"+string(i)+string(j)+string(k));
-            simulation_meas_states = readtable(foldername + "\bikedata_simulation"+string(i)+string(j)+string(k));
+            simulation_real_states = readtable(foldername + "/bikedata_simulation_real_states"+string(i)+string(j)+string(k));
+            simulation_meas_states = readtable(foldername + "/bikedata_simulation"+string(i)+string(j)+string(k));
             ax.ColorOrderIndex = m;
             plot(simulation_real_states.Time, simulation_real_states.Y);
             ax.ColorOrderIndex = m;
@@ -277,8 +277,8 @@ m = m + 1;
 for i=1:length(pred_horiz_span)
     for j=1:length(Pf_e1_span)
         for k=1:length(Q_e1_span)
-            simulation_real_states = readtable(foldername + "\bikedata_simulation_real_states"+string(i)+string(j)+string(k));
-            simulation_meas_states = readtable(foldername + "\bikedata_simulation"+string(i)+string(j)+string(k));
+            simulation_real_states = readtable(foldername + "/bikedata_simulation_real_states"+string(i)+string(j)+string(k));
+            simulation_meas_states = readtable(foldername + "/bikedata_simulation"+string(i)+string(j)+string(k));
             ax.ColorOrderIndex = m;
             plot(simulation_real_states.Time, rad2deg(simulation_real_states.Rollrate));
             ax.ColorOrderIndex = m;
@@ -307,8 +307,8 @@ m = m + 1;
 for i=1:length(pred_horiz_span)
     for j=1:length(Pf_e1_span)
         for k=1:length(Q_e1_span)
-            simulation_real_states = readtable(foldername + "\bikedata_simulation_real_states"+string(i)+string(j)+string(k));
-            simulation_meas_states = readtable(foldername + "\bikedata_simulation"+string(i)+string(j)+string(k));
+            simulation_real_states = readtable(foldername + "/bikedata_simulation_real_states"+string(i)+string(j)+string(k));
+            simulation_meas_states = readtable(foldername + "/bikedata_simulation"+string(i)+string(j)+string(k));
             ax.ColorOrderIndex = m;
             plot(simulation_real_states.Time, rad2deg(simulation_real_states.Psi));
             ax.ColorOrderIndex = m;
@@ -337,8 +337,8 @@ m = m + 1;
 for i=1:length(pred_horiz_span)
     for j=1:length(Pf_e1_span)
         for k=1:length(Q_e1_span)
-            simulation_real_states = readtable(foldername + "\bikedata_simulation_real_states"+string(i)+string(j)+string(k));
-            simulation_meas_states = readtable(foldername + "\bikedata_simulation"+string(i)+string(j)+string(k));
+            simulation_real_states = readtable(foldername + "/bikedata_simulation_real_states"+string(i)+string(j)+string(k));
+            simulation_meas_states = readtable(foldername + "/bikedata_simulation"+string(i)+string(j)+string(k));
             ax.ColorOrderIndex = m;
             plot(simulation_real_states.Time, rad2deg(simulation_real_states.Delta));
             ax.ColorOrderIndex = m;
