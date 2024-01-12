@@ -421,6 +421,11 @@ If you previously built C code for the RUT955 yourself, for this next part, make
 
 Make sure the RUT955 is running and that you are connected to its WiFi. Next, press <kbd>F1</kbd>, select "Tasks: Run Task", then "RUT955: Upload". This task runs the batch script [`upload-to-rut955.cmd`](../rut955/upload-to-rut955.cmd) which uploads scripts from [`scripts`](../rut955/scripts/) and the built files from [`bin`](../rut955/bin/) to the RUT955 via `scp`. In the output of the task, answer "Yes" to any questions and enter the password of the RUT955 user when prompted.
 
+# Simulation
+A simulink model for the bike exists in the file `Main_bikesim.slx`, which uses MPC for trajectory control. The old LQR trajectory controller is found in the `Main_bikesim_old.slx` simulink model. In order to setup and run a simulation, the `Main_sim.m` script is used. In this file, all simulation parameters (such as bike model to use, reference track etc.) can be specified, refer to comments in the MATLAB code for guidance in setting up a simulation.
+
+Simulations can also be run from the `MPC_tuning.m` script. The structure of that file is similar to the `Main_sim.m` script, but it allows for defining and running tuning batches for the MPC controller. All simulation runs are then plotted against eachother as well as the LQR trajectory controller in order to compare their performances. The data from these simulations are stored in the directory `simulation/batch_simulations`.
+
 # About the code
 
 Note that no custom bitfile is loaded to the myRIO FPGA. By default, LabVIEW then loads a default FPGA bitfile which interfaces with the blocks seen under the `myRIO` section in the functions palette. If one customizes the FPGA, then the blocks under the `myRIO` section will no longer work since they rely on the default FPGA functionality. In our case, all the functionality we need is already implemented in the default FPGA and accessible though the `myRIO` blocks, so we can keep the default FPGA.

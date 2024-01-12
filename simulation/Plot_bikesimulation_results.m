@@ -131,6 +131,8 @@ legend('True Steer angle','Estimated Steer angle', 'Steer rate')
 grid on
 title('Steer angle')
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Steering contributions
 figure()
 subplot(211)
 hold on;

@@ -1,4 +1,4 @@
-function [Xref,Yref,Psiref] = ReferenceGenerator(type,ref_dis,N,scale)
+function [Xref,Yref,Psiref] = ReferenceGenerator(type,ref_dis,N,scale,angle)
 
     switch type          
         case 'line'
@@ -9,14 +9,23 @@ function [Xref,Yref,Psiref] = ReferenceGenerator(type,ref_dis,N,scale)
 
         case 'sharp_turn'
             t = (0:(N-1))*ref_dis;
-            xref = 7*t;
-            yref = 5*[0*(1:300) 0.01*(1:800) 8*ones(1,1000)];
+            xref = t;
+            yref = [zeros(1,N/2) (t(N/2+1:end)-t(N/2))*tan(deg2rad(angle))];
             psiref=atan2(yref(2:N)-yref(1:N-1),xref(2:N)-xref(1:N-1)); 
             
         case 'smooth_curve'
+%             t = (0:(N-1))*ref_dis;
+%             xref = (300-t).*sin(0.15*t);  OLD
+%             yref= -(300-t).*cos(0.15*t)+300;
             t = (0:(N-1))*ref_dis;
-            xref = (300-t).*sin(0.15*t);
-            yref= -(300-t).*cos(0.15*t)+300;
+            xref = t;
+            yref = [zeros(1,N/2) (t(N/2+1:end)-t(N/2))*tan(deg2rad(angle))];
+            test = [yref(N/2-20:5:N/2-10),yref(N/2+10:5:N/2+20)]; % used to interpolate the smoothed curve
+            testx = [xref(N/2-20:5:N/2-10),xref(N/2+10:5:N/2+20)];
+            yi = interp1(testx,test,xref(N/2-20:N/2+20),'spline');
+            inter = find(~yi,1,'last');
+            yi(1:inter) = 0;
+            yref(N/2-20:N/2+20) = yi;
             psiref=atan2(yref(2:N)-yref(1:N-1),xref(2:N)-xref(1:N-1)); 
             
         case 'circle'
