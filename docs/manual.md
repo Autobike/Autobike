@@ -24,6 +24,7 @@
     - [Building C code for myRIO](#building-c-code-for-myrio)
     - [Uploading C code to the myRIO](#uploading-c-code-to-the-myrio)
     - [Writing new C code](#writing-new-c-code)
+    - [Resetting myRIO and add/remove softwares](#resetting-myrio-and-addremove-softwares)
   - [ESCON](#escon)
   - [FSESC](#fsesc)
   - [RUT955](#rut955)
@@ -351,6 +352,8 @@ To create a new C block with your own code in LabVIEW, you need to do three thin
 1. Write your C code and put it in [`myrio/c/src`](../myrio/c/src/). See [`balancing_controller.c`](../myrio/c/src/balancing_controller.c) for a basic example. It is recommended to document your code in the style of [Doxygen](https://www.doxygen.nl/manual/docblocks.html).
 2. Create a CMake target for your C code by editing [`CMakeLists.txt`](../myrio/c/CMakeLists.txt). You want to add another entry like [this](https://github.com/Autobike/Autobike/blob/4d0ef337a8a46b9b6f841eca9678f09dc1901441/myrio/c/CMakeLists.txt#L29). The [CMake documentation](https://cmake.org/cmake/help/latest/) may be helpful if you are trying to do more advanced builds. After this step you should be able to build and upload your code using the same steps described [here](#building-c-code-for-myrio) and [here](#uploading-c-code-to-the-myrio).
 3. In LabVIEW, create a "Call Library Function Node" block and configure it to match your C library function. See [`Balancing Controller.vi`](../myrio/labview/Sub%20VIs/Balancing%20Controller/Balancing%20Controller.vi) for an example.
+
+### Resetting myRIO and add/remove softwares
 
 ## ESCON
 
