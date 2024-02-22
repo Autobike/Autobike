@@ -11,7 +11,9 @@
       - [USB connection](#usb-connection)
       - [WiFi connection](#wifi-connection)
       - [Finishing up connection](#finishing-up-connection)
-    - [Uploading the reference trajectory and matrixes](#uploading-the-reference-trajectory-and-matrixes)
+    - [Prepare a bike trajectory in Matlab, select correct bike parameters](#prepare-a-bike-trajectory-in-matlab-select-correct-bike-parameters)
+      - [Run startup\_labview.m](#run-startup_labviewm)
+    - [Upload the reference trajectory and bike parameters into myRio flash memory](#upload-the-reference-trajectory-and-bike-parameters-into-myrio-flash-memory)
     - [Date and time configuration on NI MAX](#date-and-time-configuration-on-ni-max)
     - [Run the code](#run-the-code)
   - [Running the bike outside - trajectory test](#running-the-bike-outside---trajectory-test)
@@ -24,7 +26,7 @@
     - [Building C code for myRIO](#building-c-code-for-myrio)
     - [Uploading C code to the myRIO](#uploading-c-code-to-the-myrio)
     - [Writing new C code](#writing-new-c-code)
-    - [Resetting myRIO and add/remove softwares](#resetting-myrio-and-addremove-softwares)
+    - [Resetting myRIO](#resetting-myrio)
   - [ESCON](#escon)
   - [FSESC](#fsesc)
   - [RUT955](#rut955)
@@ -128,7 +130,7 @@ If you are running the code on new or factory reset bike hardware, make sure to 
 Open git bash or cmd in a directory of your choice (However, please **NOTE**: Do not use spaces in the directory path!) and enter
 
 ```console
-git clone --recurse-submodules https://github.com/OssianEriksson/Autobike/
+git clone --recurse-submodules https://github.com/autobike/autobike
 ```
 
 Start LabVIEW and open [`labview/Autobike.lvproj`](./../myrio/labview/Autobike.lvproj). You should now see something like the image below:
@@ -370,7 +372,10 @@ To create a new C block with your own code in LabVIEW, you need to do three thin
 2. Create a CMake target for your C code by editing [`CMakeLists.txt`](../myrio/c/CMakeLists.txt). You want to add another entry like [this](https://github.com/Autobike/Autobike/blob/4d0ef337a8a46b9b6f841eca9678f09dc1901441/myrio/c/CMakeLists.txt#L29). The [CMake documentation](https://cmake.org/cmake/help/latest/) may be helpful if you are trying to do more advanced builds. After this step you should be able to build and upload your code using the same steps described [here](#building-c-code-for-myrio) and [here](#uploading-c-code-to-the-myrio).
 3. In LabVIEW, create a "Call Library Function Node" block and configure it to match your C library function. See [`Balancing Controller.vi`](../myrio/labview/Sub%20VIs/Balancing%20Controller/Balancing%20Controller.vi) for an example.
 
-### Resetting myRIO and add/remove softwares
+### Resetting myRIO 
+If you need to reset your myRIO, Connect your PC to the myRIO using wifi connection or usb-cable. Next, open NI MAX, expand the remote systems, and right click on the remote system’s name that you want to format. To know that you selected the correct remote system, format disk will not be available to do if you select the wrong remote system. Next, Click on Format disk to start the formatting process. 
+
+
 
 ## ESCON
 
