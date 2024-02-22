@@ -27,6 +27,8 @@
     - [Uploading C code to the myRIO](#uploading-c-code-to-the-myrio)
     - [Writing new C code](#writing-new-c-code)
     - [Resetting myRIO](#resetting-myrio)
+    - [Reset factory myRIO when not visible in NI MAX:](#reset-factory-myrio-when-not-visible-in-ni-max)
+    - [Add/Remove softwares from myRIO:](#addremove-softwares-from-myrio)
   - [ESCON](#escon)
   - [FSESC](#fsesc)
   - [RUT955](#rut955)
@@ -373,7 +375,16 @@ To create a new C block with your own code in LabVIEW, you need to do three thin
 3. In LabVIEW, create a "Call Library Function Node" block and configure it to match your C library function. See [`Balancing Controller.vi`](../myrio/labview/Sub%20VIs/Balancing%20Controller/Balancing%20Controller.vi) for an example.
 
 ### Resetting myRIO 
-If you need to reset your myRIO, Connect your PC to the myRIO using wifi connection or usb-cable. Next, open NI MAX, expand the remote systems, and right click on the remote system’s name that you want to format. To know that you selected the correct remote system, format disk will not be available to do if you select the wrong remote system. Next, Click on Format disk to start the formatting process. 
+If you need to reset your myRIO, Connect your PC to the myRIO using wifi connection or usb-cable. Next, open `NI MAX`., expand the `Remote Systems`, and right click on the remote system’s name that you want to format. To know that you selected the correct remote system, format disk will not be available to do if you select the wrong remote system. Next, Click on Format disk to start the formatting process. The figure below shows where to find `Format disk`.
+![](assets/202402223.png)  
+
+### Reset factory myRIO when not visible in NI MAX:
+Open `NI MAX`. Next, expand `Remote Systems` and if the remote system you want to format is not shown there, follow the instructions here [Restore myRIO to Factory Defaults When not Recognized by the Computer](https://knowledge.ni.com/KnowledgeArticleDetails?id=kA00Z0000015BjBSAU&l=sv-SE). - NI to reset factory your remote system. 
+
+### Add/Remove softwares from myRIO:
+Connect to the myRIO using wifi connection or usb-cable. Next, open `NI MAX` and expand the `Remote Systems` to find your desired remote system. Expand your remote system and click on Software. On the left top corner, you see Add/Remove Software. It should look the same as the figure below.
+![](assets/202402221.png)  
+Follow the instructions here: [Installing Software on myRIO (myRIO Toolkit) - NI](https://www.ni.com/docs/en-US/bundle/labview-myrio-toolkit/page/myriohelp/myrio_advanced_config.html) for the next steps of the process. (Note: At the moment (2024-02-20), the LabVIEW2021 version has to be chosen as the software set.)
 
 
 
