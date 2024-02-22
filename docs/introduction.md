@@ -48,7 +48,7 @@ The software of the bikes is written in LabVIEW, with heavy use of C code which 
 
 ## Papers and reports
 
-Multiple reports and papers have been written by past or current groups working within the bike project. There is no single report giving a good overview of the status of the bikes as students have worked on specific parts of the functionalities in different projects. However, the we aim to keep the information in this repository up to date. So **if you notice something lacking or out of date in this repository**, please do not hesitate to update it!
+Multiple reports and papers have been written by past or current groups working within the bike project. There is no single report giving a good overview of the status of the bikes as students have worked on specific parts of the functionalities in different projects. However, the we aim to keep the information in this repository up to date. So **if you notice something lacking or out of date in this repository**, please do not hesitate to update it! The drive file including all the related papers and reports of the project is found here: [Bike Project drive](https://drive.google.com/drive/folders/0Bx9-3Qoh1Gf3UlN2azZTMFI5OFU?resourcekey=0-PYLQLVQOb0DF52MvKcPExg)
 
 Below are a list of some relevant report. If you are new to the project, it is adviced to only skim through these at first and only return to them later when you need the detailed information within them. Keep in mind that some of the descriptions of the current state of the hardware or software in these documents may be out of date.
 
