@@ -4,4 +4,3 @@ CMakeCache.txt
 CMakeFiles/
 .ninja*
 rules.ninja
-bin/
