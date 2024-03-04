@@ -371,6 +371,7 @@ If the SSH server is not enabled on your myRIO (which it is not from the factory
 
 If you face the error message below when trying to upload C codes to the myRIO, this happens because the IP address for several bikes is the same. It stops to prevent man-in-the-middle attacks, but as we know what we're doing, so we can get rid of the werning. To do that, go into the .ssh/known_hosts file by opening it in an editor (ctrl + click), and remove the line/lines that start with myRIO's IP address.
 
+![](assets/20240304.jpg) 
 
 ### Writing new C code
 
