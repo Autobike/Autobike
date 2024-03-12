@@ -418,7 +418,7 @@ New Wifi Password:
 
 * Bikeproject24
 
-Credentials for router (192.168.1.1 in a browser):
+Credentials for router WebUI (192.168.1.1 in a browser):
 
 * Username: "admin"
 * Password: "Bikeproject24"
