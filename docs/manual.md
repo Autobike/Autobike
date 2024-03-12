@@ -407,13 +407,23 @@ Can be configured using the [VESC tool](https://vesc-project.com/vesc_tool). Usi
 
 ## RUT955
 
-WiFi Passwords:
+WiFi Default Passwords:
 
 * Red bike - RUT955-685C: "Ec78RaFf"
 * E-scooter - RUT955-6381: "Qv97KmJy"
 * Green bike - RUT955-EC76: "Yg5d8MXf"
+* Orange bike - RUT955-4667: "k1GCc9x0"
+
+New Wifi Password:
+
+* Bikeproject24
 
 Credentials for ssh login:
+
+* Username: "admin"
+* Password: "Bikeproject24"
+
+Old credentials for ssh login:
 
 * Username: "root"
 * Password: "Autobike1"
