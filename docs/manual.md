@@ -418,12 +418,12 @@ New Wifi Password:
 
 * Bikeproject24
 
-Credentials for ssh login:
+Credentials for router (192.168.1.1 in a browser):
 
 * Username: "admin"
 * Password: "Bikeproject24"
 
-Old credentials for ssh login:
+Credentials for ssh login:
 
 * Username: "root"
 * Password: "Autobike1"
