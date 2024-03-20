@@ -67,15 +67,15 @@ extern void transform_latlog_to_XY_l(double longitude, double latitude, double *
     useLastValueIfNaN(&longitude, &lastLongitude);
 
     // if (!initializedLatLon && !isnan(latitude) && !isnan(longitude) && GPSflag > 25)
-    // { 
+    // {
     //     latitude0 = 0;
     //     longitude0 = 0;
 
     //     initializedLatLon = true;
     // }
 
-    latitude0 = 57 * M_PI /180;
-    longitude0 = 11* M_PI /180;
+    latitude0 = 57 * M_PI / 180;
+    longitude0 = 11 * M_PI / 180;
     // latitude0 = 0;
     // longitude0 = 0;
     initializedLatLon = true;
@@ -166,78 +166,66 @@ extern void time_update(double Est_States_l[7], double dot_delta, double (*A_d)[
  * @author Levi Stevens
  */
 extern void measurement_update(double Est_States_l_1[7], double dot_delta, double y[7], double (*Kalman_Gain)[7],
-                               double (*C)[7], double D[7], double Est_states_l[7], double GPSflag)
+                               double (*Kalman_Gain_noGPS)[7], double (*C)[7], double D[7], double Est_states_l[7],
+                               double GPSflag, int indoor)
 {
     double y_pred[7] = {0, 0, 0, 0, 0, 0, 0};
     double result1[7] = {0, 0, 0, 0, 0, 0, 0};
     double result2[7] = {0, 0, 0, 0, 0, 0, 0};
     double result3 = 0;
+    double K[7][7];
     static double GPSflag_1 = 0;
 
-    if (GPSflag_1 != GPSflag && GPSflag > 50) // Update with GPS
+    // C*x
+    for (int i = 0; i < 7; i++)
     {
-        // C*x
+        for (int j = 0; j < 7; j++)
+        {
+            result1[i] += C[i][j] * Est_States_l_1[j];
+        }
+    }
+    // D*u
+    for (int k = 0; k < 7; k++)
+    {
+        result2[k] = D[k] * (dot_delta);
+    }
+    // y_pred = C1 * Est_States_l + D1 * dot_delta;
+    for (int h = 0; h < 7; h++)
+    {
+        y_pred[h] = result1[h] + result2[h];
+    }
+
+    if (GPSflag_1 != GPSflag && GPSflag > 50 && indoor == 0) // Update with GPS
+    {
         for (int i = 0; i < 7; i++)
         {
             for (int j = 0; j < 7; j++)
             {
-                result1[i] += C[i][j] * Est_States_l_1[j];
+                K[i][j] = Kalman_Gain[i][j];
             }
         }
-        // D*u
-        for (int k = 0; k < 7; k++)
+    
+    }
+    else
+    {
+        for (int i = 0; i < 7; i++)
         {
-            result2[k] = D[k] * (dot_delta);
-        }
-        // y_pred = C1 * Est_States_l + D1 * dot_delta;
-        for (int h = 0; h < 7; h++)
-        {
-            y_pred[h] = result1[h] + result2[h];
-        }
-        // Measurement update
-        for (int z = 0; z < 7; z++)
-        {
-            result3 = 0;
-            for (int l = 0; l < 7; l++)
+            for (int j = 0; j < 7; j++)
             {
-                result3 += Kalman_Gain[z][l] * (y[l] - y_pred[l]);
+                K[i][j] = Kalman_Gain_noGPS[i][j];
             }
-            Est_states_l[z] = Est_States_l_1[z] + result3;
         }
     }
-    else // update w/out GPS
+    
+    // Measurement update
+    for (int z = 0; z < 7; z++)
     {
-        // CGPS*x
-        for (int i = 2; i < 7; i++)
+        result3 = 0;
+        for (int l = 0; l < 7; l++)
         {
-            for (int j = 3; j < 7; j++)
-            {
-                result1[i] += C[i][j] * Est_States_l_1[j];
-            }
+            result3 += K[z][l] * (y[l] - y_pred[l]);
         }
-        // DGPS*u
-        for (int k = 2; k < 7; k++)
-        {
-            result2[k] = D[k] * (dot_delta);
-        }
-        // y_predGPS = CGPS * Est_States_l + DGPS * dot_delta;
-        for (int h = 2; h < 7; h++)
-        {
-            y_pred[h] = result1[h] + result2[h];
-        }
-        // Measurement update w/out GPS
-        for (int z = 3; z < 7; z++)
-        {
-            result3 = 0;
-            for (int l = 2; l < 7; l++)
-            {
-                result3 += Kalman_Gain[z][l] * (y[l] - y_pred[l]);
-            }
-            Est_states_l[z] = Est_States_l_1[z] + result3;
-        }
-        Est_states_l[0] = Est_States_l_1[0];
-        Est_states_l[1] = Est_States_l_1[1];
-        Est_states_l[2] = Est_States_l_1[2];
+        Est_states_l[z] = Est_States_l_1[z] + result3;
     }
 
     // Set the actual flag to previous flag for next iteration
@@ -287,7 +275,6 @@ double wrap_angle(double angle)
     return wrapped_angle - M_PI;
 }
 
-
 /**
  * State estimator using a Kalman filter
  *
@@ -326,8 +313,9 @@ double wrap_angle(double angle)
  */
 extern void Kalman_filter(double *X, double *Y, double *Psi, double *roll, double *rollRate, double *delta, double *v,
                           double dot_delta, double latitude, double longitude, double a_y, double w_x, double w_z,
-                          double delta_enc, double speed, double *Kalman_Gain_flat, double *A_d_flat, double *B_d,
-                          double *C_flat, double *D, double reset, double *init, double GPSflag)
+                          double delta_enc, double speed, double *Kalman_Gain_flat, double *Kalman_Gain_noGPS_flat,
+                          double *A_d_flat, double *B_d, double *C_flat, double *D, double reset, double *init,
+                          double GPSflag, int indoor)
 {
 
     static double Est_States[7];     // Global frame t-1
@@ -358,10 +346,12 @@ extern void Kalman_filter(double *X, double *Y, double *Psi, double *roll, doubl
 
     // Generate the matrices
     double Kalman_Gain[7][7];
+    double Kalman_Gain_noGPS[7][7];
     double A_d[7][7];
     double C[7][7];
 
     transform_mat(Kalman_Gain_flat, Kalman_Gain);
+    transform_mat(Kalman_Gain_noGPS_flat, Kalman_Gain_noGPS);
     transform_mat(A_d_flat, A_d);
     transform_mat(C_flat, C);
 
@@ -394,7 +384,8 @@ extern void Kalman_filter(double *X, double *Y, double *Psi, double *roll, doubl
     y[6] = speed;
 
     // c) Update
-    measurement_update(Est_States_l_1, dot_delta, y, Kalman_Gain, C, D, Est_states_l, GPSflag);
+    measurement_update(Est_States_l_1, dot_delta, y, Kalman_Gain, Kalman_Gain_noGPS, C, D, Est_states_l, GPSflag,
+                       indoor);
     // for (int j = 0; j < 7; j++)
     //  {
     //  Est_states_l[j] = Est_States_l_1[j];
