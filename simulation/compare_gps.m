@@ -1,11 +1,14 @@
+%% MODIFICATO RIGHE 7 e 8 aggiungendo Traj_ref_test\
+% c'è un errore alla riga 11? Non esiste 'trajectorymat_parkinline.csv'?
+
 clear
 
 %% Load data GPS
-data_lab = readtable('Logging_data\Test_session_22_05\data_1.csv');Table_traj = readtable('trajectorymat_backstraight.csv');
-data_lab1 = readtable('Logging_data\Test_session_22_05\data_14.csv');Table_traj1 = readtable('trajectorymat_backstraight.csv');
+data_lab = readtable('Logging_data\Test_session_22_05\data_1.csv');Table_traj = readtable('Traj_ref_test\trajectorymat_backstraight.csv');
+data_lab1 = readtable('Logging_data\Test_session_22_05\data_14.csv');Table_traj1 = readtable('Traj_ref_test\trajectorymat_backstraight.csv');
 data_lab2 = readtable('Logging_data\Test_session_17_05\data_5.csv');%Table_traj1 = readtable('trajectorymat_backstraight.csv');
 data_lab3 = readtable('Logging_data\Test_session_17_05\data_1.csv');%Table_traj1 = readtable('trajectorymat_backstraight.csv');
-data_lab = readtable('Logging_data\Test_session_25_05\data_1.csv');Table_traj = readtable('Traj_ref_test\trajectorymat_parkinline.csv');
+data_lab = readtable('Logging_data\Test_session_25_05\data_1.csv');Table_traj = readtable('trajectorymat_parkinline.csv');
 
 %% Parameter for plot
 gps_delay = 5;

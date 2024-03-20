@@ -14,7 +14,7 @@ clc;
 % Sampling Time
     Ts = 0.01; 
 % Constant Speed [m/s]
-    v = 3;    
+    v = 2.4;    
 % Choose The Bike - Options: 'red' or 'black'
     bike = 'red';
 % Load the parameters of the specified bicycle
@@ -222,7 +222,7 @@ D2 = [(-h_imu*lr*v)/((lr+lf)*h) 0 0 0 0]';
 A_d = (eye(size(A))+Ts*A);
 B_d = Ts*B;
 
-% Select the Q and R tuning depending on the bike(run the% Kalman_Q_R_tuner)
+% Select the Q and R tuning depending on the bike(run the Kalman_Q_R_tuner)
 load('Q_and_R_backup_red_bike.mat');
 
 % Compute Kalman Gain
@@ -273,7 +273,11 @@ params(3,7) = P_balancing_inner;
 
 
 %% Save matrix in XML/CSV
+load('K_noGPS.mat');
+
+% matrixmat = [A_d; B_d'; C1; D1';Kalman_gain1; K_noGPS;initial_states;params];
 matrixmat = [A_d; B_d'; C1; D1';Kalman_gain1;initial_states;params];
+
 
 prompt = {'Enter the bike type','Enter the matrix name.'};
 dlgtitle = 'Parameters matrix';

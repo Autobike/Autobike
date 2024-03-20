@@ -32,22 +32,22 @@ function Parameters = LoadBikeParameters(bike)
         Parameters.inertia_front_mod = 0.245;  %[kg.m^2] inertia of the front wheel
         Parameters.r_wheel_mod = 0.350;        % radius of the wheel
         Parameters.h_mod = 0.2085 + Parameters.r_wheel_mod;   % height of center of mass [m]
-        Parameters.lr_mod = 0.4964;             % distance from rear wheel to frame's center of mass [m]
-        Parameters.lf_mod = 1.095-0.4964;       % distance from front wheel to frame's center of mass [m]
-        Parameters.c_mod = 0.06;                % length between front wheel contact point and the extention of the fork axis [m]
-        Parameters.m_mod = 45;                  % Bike mas [kg]
-        Parameters.lambda_mod = deg2rad(70);    % angle of the fork axis [deg]
+        Parameters.lr_mod = 0.4964;            % distance from rear wheel to frame's center of mass [m]
+        Parameters.lf_mod = 1.095-0.4964;      % distance from front wheel to frame's center of mass [m]
+        Parameters.c_mod = 0.06;               % length between front wheel contact point and the extention of the fork axis [m]
+        Parameters.m_mod = 45;                 % Bike mas [kg]
+        Parameters.lambda_mod = deg2rad(70);   % angle of the fork axis [deg]
         Parameters.IMU_height_mod = 0.71;      % IMU height [m]
-        Parameters.IMU_x_mod = 0.0;           % x Position of the IMU measured from rear wheel (parallel to bike) [m]
+        Parameters.IMU_x_mod = 0.0;            % x Position of the IMU measured from rear wheel (parallel to bike) [m]
         Parameters.IMU_roll_mod = 0;           % Orientation offset in roll (degrees)
-        Parameters.IMU_pitch_mod = 0;            % Orientation offset in pitch (degrees)
-        Parameters.IMU_yaw_mod = 0;             % Orientation offset in yaw (degrees)
-        Parameters.Xgps_mod = 0.0;              % GPS position X accoarding to the model [m] 
-        Parameters.Ygps_mod = 0.0;              % GPS position Y accoarding to the model [m]
-        Parameters.Hgps_mod = 0.0;              % GPS position height accoarding to the model   [m]
+        Parameters.IMU_pitch_mod = 0;          % Orientation offset in pitch (degrees)
+        Parameters.IMU_yaw_mod = 0;            % Orientation offset in yaw (degrees)
+        Parameters.Xgps_mod = 0.0;             % GPS position X accoarding to the model [m] 
+        Parameters.Ygps_mod = 0.0;             % GPS position Y accoarding to the model [m]
+        Parameters.Hgps_mod = 0.0;             % GPS position height accoarding to the model   [m]
         
         %
-        Parameters.uneven_mass = false;    % true = use uneven mass distribution in bike model ; false = do not use
+        Parameters.uneven_mass = false;        % true = use uneven mass distribution in bike model ; false = do not use
 
     elseif strcmp(bike,'black')
 
