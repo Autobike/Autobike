@@ -226,5 +226,54 @@ function Parameters = LoadBikeParameters(bike)
         Parameters.drive_motor_gear_rat = 63;
         Parameters.wheelbase = 1.185; % [m]
         Parameters.fork_angle = 0.89; % [rad]
+
+    elseif strcmp(bike,'MHD')
+
+        % Black bike --> Parameters on bike (actual measured)
+        Parameters.inertia_front = 0.245;  %[kg.m^2] inertia of the front wheel
+        Parameters.r_wheel = 0.355;         % radius of the wheel
+        Parameters.h = 0.534 ;             % height of center of mass [m]
+        Parameters.lr = 0.4964;             % distance from rear wheel to frame's center of mass [m]
+        Parameters.lf = 1.095-0.4964;       % distance from front wheel to frame's center of mass [m]
+        Parameters.c = 0.06;               % length between front wheel contact point and the extention of the fork axis [m]
+        Parameters.m = 31.3;               % Bike mass [kg]
+        Parameters.lambda = deg2rad(66);   % angle of the fork axis [deg]  !!! TO BE MEASURED
+        Parameters.IMU_height = 0.95;     % IMU height [m]
+        Parameters.IMU_x = 0.0;           % x Position of the IMU measured from rear wheel (parallel to bike) [m]
+        Parameters.IMU_roll = 0;           % Orientation offset in roll (degrees)
+        Parameters.IMU_pitch = 0;            % Orientation offset in pitch (degrees)
+        Parameters.IMU_yaw = 0;             % Orientation offset in yaw (degrees)
+        Parameters.Xgps = 0.0;             % Actual GPS position offset X (measured from middlepoint position parralel to bike heading) [m]
+        Parameters.Ygps = 0.0;             % Actual GPS position offset Y (measured from middlepoint position perpendicular to bike heading) [m]
+        Parameters.Hgps = 0.0;             % GPS position height (measured from the groud to the GPS)   [m]
+        Parameters.steer_motor_gear_rat = 231;
+        Parameters.steer_pully_gear_rat = 1;
+        Parameters.steer_enc_CPR = 1024;
+        Parameters.steer_motor_max_RPM = 8000;
+        Parameters.max_steer_angle = 0.7; % [rad]
+        Parameters.drive_motor_gear_rat = 23;
+        Parameters.wheelbase = 1.12; % [m]
+        Parameters.fork_angle = 1.3; % [rad]
+
+        % Parameters in model 
+        Parameters.inertia_front_mod = 0.245;  %[kg.m^2] inertia of the front wheel
+        Parameters.h_mod = 0.534 ;             % height of center of mass [m]
+        Parameters.lr_mod = 0.4964;             % distance from rear wheel to frame's center of mass [m]
+        Parameters.lf_mod = 1.095-0.4964;       % distance from front wheel to frame's center of mass [m]
+        Parameters.c_mod = 0.06;               % length between front wheel contact point and the extention of the fork axis [m]
+        Parameters.m_mod = 31.3;               % Bike mass [kg]
+        Parameters.lambda_mod = deg2rad(66);   % angle of the fork axis [deg]  !!! TO BE MEASURED
+        Parameters.IMU_height_mod = 0.95;     % IMU height [m]
+        Parameters.IMU_x_mod = 0.0;            % x Position of the IMU measured from rear wheel (parallel to bike) [m]
+        Parameters.IMU_roll_mod = 0;           % Orientation offset in roll (degrees)
+        Parameters.IMU_pitch_mod = 0;            % Orientation offset in pitch (degrees)
+        Parameters.IMU_yaw_mod = 0;             % Orientation offset in yaw (degrees)
+        Parameters.Xgps_mod = 0.0;             % Actual GPS position offset X (measured from middlepoint position parralel to bike heading) [m]
+        Parameters.Ygps_mod = 0.0;             % Actual GPS position offset Y (measured from middlepoint position perpendicular to bike heading) [m]
+        Parameters.Hgps_mod = 0.0;             % GPS position height (measured from the groud to the GPS)   [m]
+       
+        %
+        Parameters.uneven_mass = false;    % true = use uneven mass distribution in bike model ; false = do not use
+    
     end
 end
