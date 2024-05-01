@@ -9,14 +9,21 @@ Labview_data=readtable('Labview_data\data.csv');
 
 % set the initial global coordinate system for gps coordinates
     gps_delay = 5;
-% Choose The Bike - Options: 'red','black','green','scooter','plastic' 
-    bike = 'green';
+% Choose The Bike - Options:'red','black','green','scooter','plastic','MHD' 
+    bike = 'red';
 % Load the parameters of the specified bicycle
     bike_params = LoadBikeParameters(bike); 
 
 %% Prepare data for ploting
 % If you're doing outdoor test then set that value to 1
 outdoor_test = 0;
+
+% if outdoor_test == 0
+%     % Delete all the data that are obtained before reseting the trajectory
+%     reset_traj = find(Labview_data.PICurrent_A_~=0,1,'first');
+%     Labview_data(1:reset_traj,:) = [];
+% end
+
 if outdoor_test == 1
     % Delete all the data that are obtained before reseting the trajectory
     reset_traj = find(Labview_data.ResetTraj==1,1,'last');
@@ -40,6 +47,7 @@ omega_x = Labview_data.GyroscopeX_rad_s_;
 omega_z = Labview_data.GyroscopeZ_rad_s_;
 delta_enc = Labview_data.SteeringAngleEncoder_rad_;
 v_enc = Labview_data.SpeedVESC_rad_s_*bike_params.r_wheel;
+v_ref = Labview_data.SpeedReference_rad_s_*bike_params.r_wheel;
 v_GPS=Labview_data.GPSVelocity_m_s_;
 
 % Prepare measurement data for the offline kalman
@@ -96,19 +104,19 @@ legend('Online estimation','GPS measurements')
 
 subplot(4,2,5)
 plot(Labview_data.Time(start_point:end_point), rad2deg(wrapToPi(Labview_data.StateEstimatePsi_rad_(start_point:end_point))))
-hold on
-plot(Labview_data.Time(start_point:end_point), Labview_data.steeringFlag(start_point:end_point))
+% hold on
+% plot(Labview_data.Time(start_point:end_point), Labview_data.steeringFlag(start_point:end_point))
 % plot(sim_data.Time(:,1), rad2deg(wrapToPi(sim_data.Psi_estimated(:,1)))) %'Simulation',
 xlabel('Time (s)')
 ylabel('heading (deg)')
 grid on
-legend('Online estimation','Steering motor enabled flag')
+legend('Online estimation') %,'Steering motor enabled flag')
 
 subplot(4,2,2)
 plot(Labview_data.Time(start_point:end_point),rad2deg(Labview_data.StateEstimateRoll_rad_(start_point:end_point)))
 hold on
 plot(Labview_data.Time(start_point:end_point),rad2deg(Labview_data.Input(start_point:end_point)))
-plot(Labview_data.Time(start_point:end_point), Labview_data.steeringFlag(start_point:end_point))
+plot(Labview_data.Time(start_point:end_point), 2*Labview_data.steeringFlag(start_point:end_point),'--','LineWidth',2)
 % plot(sim_data.Time(:,1), rad2deg(sim_data.Roll_estimated(:,1))) %'Simulation',
 % plot(sim_data.Time(:,1),rad2deg(sim_data.ref_roll(:,1))) %'rollref sim'
 xlabel('Time (s)')
@@ -120,7 +128,7 @@ subplot(4,2,4)
 plot(Labview_data.Time(start_point:end_point), rad2deg(Labview_data.StateEstimateRollrate_rad_s_(start_point:end_point)))
 hold on
 plot(Labview_data.Time(start_point:end_point), rad2deg(Labview_data.GyroscopeX_rad_s_(start_point:end_point)))
-plot(Labview_data.Time(start_point:end_point), Labview_data.steeringFlag(start_point:end_point))
+plot(Labview_data.Time(start_point:end_point), 10 * Labview_data.steeringFlag(start_point:end_point),'--','LineWidth',2)
 % plot(sim_data.Time(:,1), rad2deg(sim_data.Rollrate_estimated(:,1))) %'simulation'
 xlabel('Time (s)')
 ylabel('Roll Rate (deg/s)')
@@ -131,7 +139,7 @@ subplot(4,2,6)
 plot(Labview_data.Time(start_point:end_point),rad2deg(Labview_data.StateEstimateDelta_rad_(start_point:end_point)))
 hold on
 plot(Labview_data.Time(start_point:end_point),rad2deg(Labview_data.SteeringAngleEncoder_rad_(start_point:end_point)))
-plot(Labview_data.Time(start_point:end_point), Labview_data.steeringFlag(start_point:end_point))
+plot(Labview_data.Time(start_point:end_point), 5*Labview_data.steeringFlag(start_point:end_point),'--','LineWidth',2)
 % plot(sim_data.Time(:,1), rad2deg(sim_data.Delta_estimated(:,1))) %'simulation', 
 xlabel('Time (s)')
 ylabel('Steering Angle (deg)')
@@ -143,97 +151,127 @@ plot(Labview_data.Time(start_point:end_point), Labview_data.StateEstimateVelocit
 hold on
 plot(Labview_data.Time(start_point:end_point), v_enc(start_point:end_point))
 plot(Labview_data.Time(start_point:end_point), v_GPS(start_point:end_point))
+plot(Labview_data.Time(start_point:end_point), v_ref(start_point:end_point))
 % plot(sim_data.Time(:,1), sim_data.Velocity_estimated(:,1)) %'simulation',
 xlabel('Time (s)')
 ylabel('velocity (m/s)')
 ylim([-1 5])
 grid on
-legend('Online estimation','Vesc Measurement','GPS Measurement')
+legend('Online estimation','Vesc Measurement','GPS Measurement','Speed Reference')
 
-% Delta contributions
-% test = rad2deg(-0.008944 .* sign(Labview_data.Error1(:,1)) .* min(abs(Labview_data.Error1(:,1)),5.66548));
-figure()
-subplot(3,1,1)
-plot(Labview_data.Time(start_point:end_point,1),rad2deg(Labview_data.LateralContribution(start_point:end_point,1)));
-hold on
-plot(Labview_data.Time(start_point:end_point), Labview_data.steeringFlag(start_point:end_point))
-% plot(sim_data.Time(:,1),rad2deg(sim_data.delta_e1(:,1))); %'simulation',
-% plot(Labview_data.Time(start_point:end_point,1),test(start_point:end_point,1)); %'test',
-xlabel('Time [t]')
-ylabel('Angle [Deg]')
-legend('Onlime estimation','Steering motor enabled flag','Location','southeast')
+% Steering motor rate input
+figure
+plot(Labview_data.Time(start_point:end_point), Labview_data.SteerrateInput_rad_s_(start_point:end_point))
+xlabel('Time (s)')
+ylabel('Steering rate (rad/s)')
 grid on
-title('lateral error contribution')
+legend('Steering Motor Input')
 
-subplot(3,1,2)
-plot(Labview_data.Time(start_point:end_point,1),rad2deg(Labview_data.HeadingContribution(start_point:end_point,1)));
+% Forward motor current
+figure
+plot(Labview_data.Time(start_point:end_point), Labview_data.PICurrent_A_(start_point:end_point))
 hold on
-plot(Labview_data.Time(start_point:end_point), Labview_data.steeringFlag(start_point:end_point))
-% plot(sim_data.Time(:,1),rad2deg(sim_data.delta_e2(:,1))); %'simulation',
-xlabel('Time [t]')
-ylabel('Angle [Deg]')
-legend('Onlime estimation','Steering motor enabled flag','Location','southeast')
+plot(Labview_data.Time(start_point:end_point), Labview_data.InputCurrent_A_(start_point:end_point))
+plot(Labview_data.Time(start_point:end_point), Labview_data.MotorCurrent_A_(start_point:end_point))
+xlabel('Time (s)')
+ylabel('Forward Motor Current (A)')
 grid on
-title('Heading error contribution')
+legend('PI current(A)','Input Current(A)','Motor Current(A)')
 
-subplot(3,1,3)
-plot(Labview_data.Time(start_point:end_point,1),rad2deg(Labview_data.DpsirefContribution(start_point:end_point,1)));
-hold on
-plot(Labview_data.Time(start_point:end_point), Labview_data.steeringFlag(start_point:end_point))
-% plot(sim_data.Time(:,1),rad2deg(sim_data.delta_psi(:,1))); %'simulation',
-xlabel('Time [t]')
-ylabel('Angle [Deg]')
-legend('Online estimation','Steering motor enabled flag','Location','southeast')
+% Accelerometer
+figure
+plot(Labview_data.Time(start_point:end_point), Labview_data.AccelerometerY_rad_s_2_(start_point:end_point))
+xlabel('Time (s)')
+ylabel('Accelerometer Y-axis (m/s^2)')
 grid on
-title('Dpsiref contribution')
+legend('Accelerometer Y')
 
-% Compare delta_ref and roll_ref
-sum_cont = rad2deg(Labview_data.DpsirefContribution)+rad2deg(Labview_data.HeadingContribution)+rad2deg(Labview_data.LateralContribution);
-figure();
-subplot(2,1,1)
-plot(Labview_data.Time(start_point:end_point,1),sum_cont(start_point:end_point,1));
-hold on
-plot(Labview_data.Time(start_point:end_point), Labview_data.steeringFlag(start_point:end_point))
-% plot(sim_data.Time(:,1),rad2deg(sim_data.delta_ref(:,1))); %'simulation',
-xlabel('Time [t]')
-ylabel('Angle [Deg]')
-legend('online estimation','Steering motor enabled flag','Location','southeast')
-grid on
-title('Delta_{ref}')
+if outdoor_test == 1
 
-subplot(2,1,2)
-plot(Labview_data.Time(start_point:end_point,1),rad2deg(Labview_data.Rollref(start_point:end_point,1)));
-hold on
-plot(Labview_data.Time(start_point:end_point), Labview_data.steeringFlag(start_point:end_point))
-% plot(sim_data.Time(:,1),rad2deg(sim_data.ref_roll(:,1))); %'simulation',
-xlabel('Time [t]')
-ylabel('Angle [Deg]')
-legend('online estimation','Steering motor enabled flag','Location','southeast')
-grid on
-title('Roll_{ref}')
+    % Delta contributions
+    % test = rad2deg(-0.008944 .* sign(Labview_data.Error1(:,1)) .* min(abs(Labview_data.Error1(:,1)),5.66548));
+    figure()
+    subplot(3,1,1)
+    plot(Labview_data.Time(start_point:end_point,1),rad2deg(Labview_data.LateralContribution(start_point:end_point,1)));
+    hold on
+    plot(Labview_data.Time(start_point:end_point), Labview_data.steeringFlag(start_point:end_point))
+    % plot(sim_data.Time(:,1),rad2deg(sim_data.delta_e1(:,1))); %'simulation',
+    % plot(Labview_data.Time(start_point:end_point,1),test(start_point:end_point,1)); %'test',
+    xlabel('Time [t]')
+    ylabel('Angle [Deg]')
+    legend('Onlime estimation','Steering motor enabled flag','Location','southeast')
+    grid on
+    title('lateral error contribution')
+    
+    subplot(3,1,2)
+    plot(Labview_data.Time(start_point:end_point,1),rad2deg(Labview_data.HeadingContribution(start_point:end_point,1)));
+    hold on
+    plot(Labview_data.Time(start_point:end_point), Labview_data.steeringFlag(start_point:end_point))
+    % plot(sim_data.Time(:,1),rad2deg(sim_data.delta_e2(:,1))); %'simulation',
+    xlabel('Time [t]')
+    ylabel('Angle [Deg]')
+    legend('Onlime estimation','Steering motor enabled flag','Location','southeast')
+    grid on
+    title('Heading error contribution')
+    
+    subplot(3,1,3)
+    plot(Labview_data.Time(start_point:end_point,1),rad2deg(Labview_data.DpsirefContribution(start_point:end_point,1)));
+    hold on
+    plot(Labview_data.Time(start_point:end_point), Labview_data.steeringFlag(start_point:end_point))
+    % plot(sim_data.Time(:,1),rad2deg(sim_data.delta_psi(:,1))); %'simulation',
+    xlabel('Time [t]')
+    ylabel('Angle [Deg]')
+    legend('Online estimation','Steering motor enabled flag','Location','southeast')
+    grid on
+    title('Dpsiref contribution')
+    
+    % Compare delta_ref and roll_ref
+    sum_cont = rad2deg(Labview_data.DpsirefContribution)+rad2deg(Labview_data.HeadingContribution)+rad2deg(Labview_data.LateralContribution);
+    figure();
+    subplot(2,1,1)
+    plot(Labview_data.Time(start_point:end_point,1),sum_cont(start_point:end_point,1));
+    hold on
+    plot(Labview_data.Time(start_point:end_point), Labview_data.steeringFlag(start_point:end_point))
+    % plot(sim_data.Time(:,1),rad2deg(sim_data.delta_ref(:,1))); %'simulation',
+    xlabel('Time [t]')
+    ylabel('Angle [Deg]')
+    legend('online estimation','Steering motor enabled flag','Location','southeast')
+    grid on
+    title('Delta_{ref}')
+    
+    subplot(2,1,2)
+    plot(Labview_data.Time(start_point:end_point,1),rad2deg(Labview_data.Rollref(start_point:end_point,1)));
+    hold on
+    plot(Labview_data.Time(start_point:end_point), Labview_data.steeringFlag(start_point:end_point))
+    % plot(sim_data.Time(:,1),rad2deg(sim_data.ref_roll(:,1))); %'simulation',
+    xlabel('Time [t]')
+    ylabel('Angle [Deg]')
+    legend('online estimation','Steering motor enabled flag','Location','southeast')
+    grid on
+    title('Roll_{ref}')
+    
+    % Lateral and heading error
+    figure();
+    subplot(2,1,1)
+    plot(Labview_data.Time(start_point:end_point,1),Labview_data.Error1(start_point:end_point,1));
+    hold on
+    plot(Labview_data.Time(start_point:end_point), Labview_data.steeringFlag(start_point:end_point))
+    % plot(sim_data.Time(:,1),sim_data.error1(:,1)); %'simulation',
+    xlabel('Time [t]')
+    ylabel('Distance [m]')
+    legend('online estimation','Steering motor enabled flag','Location','southeast')
+    grid on
+    title('Lateral error')
+    
+    subplot(2,1,2)
+    plot(Labview_data.Time(start_point:end_point,1),rad2deg(Labview_data.Error2(start_point:end_point,1)));
+    hold on
+    plot(Labview_data.Time(start_point:end_point), Labview_data.steeringFlag(start_point:end_point))
+    % plot(sim_data.Time(:,1),rad2deg(sim_data.error2(:,1))); %'simulation',
+    xlabel('Time [t]')
+    ylabel('Angle [Deg]')
+    legend('online estimation','Steering motor enabled flag','Location','southeast')
+    grid on
+    title('Heading error')
 
-% Lateral and heading error
-figure();
-subplot(2,1,1)
-plot(Labview_data.Time(start_point:end_point,1),Labview_data.Error1(start_point:end_point,1));
-hold on
-plot(Labview_data.Time(start_point:end_point), Labview_data.steeringFlag(start_point:end_point))
-% plot(sim_data.Time(:,1),sim_data.error1(:,1)); %'simulation',
-xlabel('Time [t]')
-ylabel('Distance [m]')
-legend('online estimation','Steering motor enabled flag','Location','southeast')
-grid on
-title('Lateral error')
-
-subplot(2,1,2)
-plot(Labview_data.Time(start_point:end_point,1),rad2deg(Labview_data.Error2(start_point:end_point,1)));
-hold on
-plot(Labview_data.Time(start_point:end_point), Labview_data.steeringFlag(start_point:end_point))
-% plot(sim_data.Time(:,1),rad2deg(sim_data.error2(:,1))); %'simulation',
-xlabel('Time [t]')
-ylabel('Angle [Deg]')
-legend('online estimation','Steering motor enabled flag','Location','southeast')
-grid on
-title('Heading error')
-
-
+end

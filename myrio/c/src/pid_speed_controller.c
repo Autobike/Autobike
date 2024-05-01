@@ -106,11 +106,15 @@ extern float PIcontroller(float Ki, float Kp, float measured_speed, float refere
     // Call the PD controller function to get the control signal
     pi_function(reference_speed, measured_speed, Kp, Ki, Tasking_period, &control_signal, Kf, threshold, steady_curr,
                 no_Kf);
-    if (control_signal > 35.0)
+    if (control_signal > 30.0)
     {
-        control_signal = 35.0;
+        control_signal = 30.0;
     }
-    if (control_signal < 0.0)
+    if (control_signal < 0.3 && measured_speed != 0)
+    {
+        control_signal = 0.3;
+    }
+    if (control_signal < 0.3 && measured_speed == 0)
     {
         control_signal = 0.0;
     }
