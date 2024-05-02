@@ -22,5 +22,5 @@ plot(new_traj_points(:,1),new_traj_points(:,2));
 
 
 % Save the file as a csv 
-csv_file_path = 'C:\Users\G\Desktop\Robot_Bikes\Autobike Autobike main simulation\Traj_ref_test\new_trajectoryfile.csv';  % Update this with your desired path
+csv_file_path = 'Traj_ref_test\new_trajectoryfile.csv';  % Update this with your desired path
 dlmwrite(csv_file_path, new_traj, 'delimiter', ',', 'precision', 10);
