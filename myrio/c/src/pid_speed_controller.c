@@ -110,11 +110,11 @@ extern float PIcontroller(float Ki, float Kp, float measured_speed, float refere
     {
         control_signal = 30.0;
     }
-    if (control_signal < 0.3 && measured_speed != 0)
+    if (control_signal < 0.3 && reference_speed != 0)
     {
         control_signal = 0.3;
     }
-    if (control_signal < 0.3 && measured_speed == 0)
+    if (control_signal < 0.3 && reference_speed == 0)
     {
         control_signal = 0.0;
     }
