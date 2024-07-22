@@ -16,7 +16,7 @@ Labview_data=readtable('Labview_data\data.csv');
 
 %% Prepare data for ploting
 % If you're doing outdoor test then set that value to 1
-outdoor_test = 0;
+outdoor_test = 1;
 
 % if outdoor_test == 0
 %     % Delete all the data that are obtained before reseting the trajectory
