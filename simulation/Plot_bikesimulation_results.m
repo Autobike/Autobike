@@ -1,4 +1,4 @@
-function [] = Plot_bikesimulation_results(Tnumber, test_curve, Results, compare_flag)
+ function [] = Plot_bikesimulation_results(Tnumber, test_curve, Results, compare_flag)
 
 % Input Parameter:
 % Tnumber is the name of the figure
@@ -28,9 +28,10 @@ function [] = Plot_bikesimulation_results(Tnumber, test_curve, Results, compare_
         ylabel('Y-dir [m]');
         % ylim([traj_plot.ymin traj_plot.ymax])
         % xlim([traj_plot.xmin traj_plot.xmax])
-        axis equal
+        % axis equal
         % xlim([-50 50])
         % ylim([0 150])
+        axis equal
         grid on;
         title('Trajectory');
         
@@ -196,7 +197,7 @@ function [] = Plot_bikesimulation_results(Tnumber, test_curve, Results, compare_
         % xlim([traj_plot.xmin traj_plot.xmax])
         axis equal
         % xlim([-50 50])
-        % ylim([0 150])
+        % ylim([-10 10]
         grid on;
         title('Trajectory');
         

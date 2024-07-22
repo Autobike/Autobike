@@ -19,8 +19,9 @@ clc;
     ref_start_idx = 2; %end of page 64 of Lorenzo's thesis
 % Horizon distance [m]
     hor_dis = 10; %tra cosa?
-% Constant Speed [m/s]
-    v = 2.4;    
+
+%Constant Speed [m/s]
+    % v = 3;    
 
 % Open the Simulink Model
     open([model '.slx']);
@@ -39,11 +40,15 @@ clc;
     time_start = 14.001; % what time do you want to take (if init==1)
 % When you have bad GPS signal:
 % Set indoor to 1 when you run the bike indoor or you have bad GPS signal
-    indoor = 1; % used in Simulink
+    indoor = 0; % used in Simulink
 % Set badGPS=1 to make the GPS signal steady from the beginning of the sim.
-    badGPS = 1; % used in Simulink
+    badGPS = 0; % used in Simulink
 % Set compare_flag=1 if you want to compare two simulation results
     compare_flag = 0;
+% Activate gain scheduling for all matrices and gains that depend on the velocity
+    scheduling = 1;
+% Activate the interpolation for the gain scheduling
+    interpolation = 1;  % used in Simulink (you can only use interpolation with scheduling = 1)
 
 %% Initial states
 if init == 1
@@ -95,7 +100,15 @@ N = 80;
 % Scale (only for infinite and circle)
 scale = 40; 
 
-[Xref,Yref,Psiref] = Trajectory(Run_tests);
+% [Xref,Yref,Psiref] = Trajectory(Run_tests);
+% [Xref,Yref,Psiref,Vref,t]=Refgeneration({'x','y','v'},'AATraj.csv');
+
+[Xref,Yref,Psiref,Vref,t]=Refgeneration({'x','y','v'},'AATrajCorrectedSpeed.csv');
+
+
+v_init=Vref(1); % needed for lqr, referenceTest, simulink>atateestimator
+
+
 
 test_curve=[Xref,Yref,Psiref];
 Nn = size(test_curve,1); % needed for simulink
@@ -112,7 +125,7 @@ Nn = size(test_curve,1); % needed for simulink
 %% Reference test (warnings and initialization update)
 if ((Run_tests == 0 || Run_tests == 2) && init == 0)
 
-    Output_reference_test = referenceTest(test_curve,hor_dis,Ts,initial_pose,v, ref_dis);
+    Output_reference_test = referenceTest(test_curve,hor_dis,Ts,initial_pose,v_init, ref_dis);
     
     % update initial states if offset is detected
     initial_state.x = Output_reference_test(1);
@@ -181,34 +194,77 @@ D_balancing_outer = 0.0;
 % Inner loop -- Balancing
 P_balancing_inner = 3.5;
 I_balancing_inner = 0;
-D_balancing_inner = 0;  
+D_balancing_inner = 0; 
+
+
+%% Calculating gains and matrices which depend on velocity, based on velocity vector which is created below. 
+if scheduling
+    V_min= min(Vref(:));
+    V_max= max(Vref(:));
+else % If the speed is going to be a constant all the time, then v min and max are same and put them down here.
+    V_min= 3;
+    V_max= 3;
+end
+
+V_stepSize=0.5;
+
+V_n=ceil((V_max-V_min)/V_stepSize)+1;
+V=linspace(V_min,V_max,V_n);
+
+V=round(V,1);
+
+K_GPS=zeros(V_n,7,7);
+K_noGPS=zeros(V_n,7,7);
+
+
+counter=zeros(V_n,1);
+A_d=zeros(V_n,7,7);
+B_d=zeros(V_n,7,1);
+C=zeros(V_n,7,7);
+D=zeros(V_n,7,1);
+
+A_t=zeros(V_n,1);
+B_t=zeros(V_n,1);
+C_t=zeros(V_n,1);
+D_t=zeros(V_n,1);
+
+load('Q_and_R_backup_red_bike.mat');
+
+format long
+for i=1: V_n
+    % Kalman filtering for both cases - with/without GPS - 
+    [K_GPS(i,:,:),K_noGPS(i,:,:),counter,A_d(i,:,:),B_d(i,:,:),C(i,:,:),D(i,:,:)] = KalmanFilter(V(i),h,lr,lf,lambda,g,c,h_imu,Ts,Q,R);
+
+    % Transfer function in heading in wrap traj
+    num = 1;
+    den = [lr/(lr+lf), V(i)/(lr+lf)];
+    [A_t(i,:), B_t(i,:), C_t(i,:), D_t(i,:)] = tf2ss(num,den);
+end
+K_GPS=permute(K_GPS,[1,3,2]);
+K_noGPS=permute(K_noGPS,[1,3,2]);
+A_d=permute(A_d,[1,3,2]);
+C=permute(C,[1,3,2]);
+
+% Storing all the calculated matrices and gains.
+GainsTable = table(V',K_GPS,K_noGPS,A_d,B_d,C,D, 'VariableNames', {'V','K_GPS','K_noGPS','A_d','B_d','C','D'});
+
+
 
 %% The LQR controller
-[k1,k2,e1_max,e2_max] = LQRcontroller(v,lr,lf);
+[k1,k2,e1_max,e2_max] = LQRcontroller(v_init,lr,lf);
 
 %% Transfer function for heading in wrap traj
 %feed forward trasfer function for d_psiref to steering reference (steering contribution for heading changes)
-num = 1;
-den = [lr/(lr+lf), v/(lr+lf)];
-[A_t, B_t, C_t, D_t] = tf2ss(num,den);
 
 % Discretize the ss 
-% Used in Simulink
-Ad_t = (eye(size(A_t))+Ts*A_t);
+% % Used in Simulink
+Ad_t = (eye(size(A_t))+Ts*A_t);   % A_t and B_t are calculated on gains table section above.
 Bd_t = B_t*Ts;
 
-%% Kalman Filter
-% Load the Q and R matrices
-load('Q_and_R_backup_red_bike.mat');
-
-[K_GPS,K_noGPS,counter,A_d,B_d,C,D] = KalmanFilter(v,h,lr,lf,lambda,g,c,h_imu,Ts,Q,R);
-
-% Uncomment if you want to create a new matrixmat_default with K_noGPS
-% save('K_noGPS.mat','K_noGPS');
 
 %% Save matrix in XML/CSV
-matrixmat = [A_d; B_d'; C; D';K_GPS; K_noGPS]; 
-SaveInCSV(matrixmat,test_curve);
+% matrixmat = [A_d; B_d'; C; D';K_GPS; K_noGPS]; 
+% SaveInCSV(matrixmat,test_curve);
 
 %% Start the Simulation
 if Run_tests == 0 || Run_tests == 2
@@ -235,3 +291,4 @@ end
 
 %% Test cases for validation
 TestCases(Run_tests,hor_dis,Ts,initial_pose);
+%%
