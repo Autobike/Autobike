@@ -241,7 +241,7 @@ At the bottom of the page, click `Time Settings` and configure the current date 
 
 After turning on the relevant parts of the bike and [connecting to the myRIO](#connect-myrio-to-your-pc), you should just be able to open one of the main VI:s (listed [here](../myrio/labview)) and run it.
 
-You also have to put the correct name of the csv files to have the matrixes and the reference trajectory, in all 3 of these VI:s **figure missing**:
+You also have to put the correct name of the csv files to have the matrixes and the reference trajectory, in all 3 of these VI:s:
 <img width="215" alt="image" src="https://github.com/ja125/Autobike_Summer2023/assets/135957410/5d0e71b8-6597-4c0f-bc3a-0bdac35080b6">
 
 In the following order, run the 3 VI:s :
@@ -261,7 +261,7 @@ Sometimes, it can happen that someone has default values of zeros for task perio
 
 To solve this issue: myRIO needs to be restarted, and the values above which are correct values for the task periods, should be inputted in configuration.VI in order to solve this problem. 
 
-![](assets/202408820.jpeg)  
+![](assets/20240820.jpeg)  
 
 ## Running the bike outside - trajectory test 
 
