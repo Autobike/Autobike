@@ -45,10 +45,12 @@ clc;
     badGPS = 0; % used in Simulink
 % Set compare_flag=1 if you want to compare two simulation results
     compare_flag = 0;
-% Activate gain scheduling for all matrices and gains that depend on the velocity
+% Activate gain scheduling for system matrices and gains that depend on the
+% velocity. Implemented on Kalman Filter and Heading dot contribution transfer function
     scheduling = 1;
-% Activate the interpolation for the gain scheduling
-    interpolation = 1;  % used in Simulink (you can only use interpolation with scheduling = 1)
+% Activate the interpolation for the gain scheduling. Interpolation is
+% always supposed to be used when scheduling = 1. 
+    interpolation = 1;  % used in Simulink (you can only use interpolation if scheduling = 1)
 
 %% Initial states
 if init == 1
@@ -104,8 +106,10 @@ scale = 40;
 % [Xref,Yref,Psiref,Vref,t]=Refgeneration({'x','y','v'},'AATraj.csv');
 
 [Xref,Yref,Psiref,Vref,t]=Refgeneration({'x','y','v'},'AATrajCorrectedSpeed.csv');
+% ref_traj = [Xref,Yref,Psiref,Vref];
+% csvwrite("AATrajectory.csv",ref_traj);
 
-
+Vref = Vref;
 v_init=Vref(1); % needed for lqr, referenceTest, simulink>atateestimator
 
 
@@ -201,12 +205,13 @@ D_balancing_inner = 0;
 if scheduling
     V_min= min(Vref(:));
     V_max= max(Vref(:));
-else % If the speed is going to be a constant all the time, then v min and max are same and put them down here.
+else % If the speed is going to be a constant all the time, then v min and max are same and put them down here. Defaulted to 3 but
+     % user can change it if desired.
     V_min= 3;
     V_max= 3;
 end
 
-V_stepSize=0.5;
+V_stepSize=0.1;
 
 V_n=ceil((V_max-V_min)/V_stepSize)+1;
 V=linspace(V_min,V_max,V_n);
@@ -258,7 +263,7 @@ GainsTable = table(V',K_GPS,K_noGPS,A_d,B_d,C,D, 'VariableNames', {'V','K_GPS','
 
 % Discretize the ss 
 % % Used in Simulink
-Ad_t = (eye(size(A_t))+Ts*A_t);   % A_t and B_t are calculated on gains table section above.
+Ad_t = eye(1)+Ts*A_t;% A_t and B_t are calculated on gains table section above.
 Bd_t = B_t*Ts;
 
 

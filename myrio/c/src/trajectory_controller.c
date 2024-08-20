@@ -1,4 +1,3 @@
-#include "trajectory_selector.h"
 #include <math.h>
 #include <stdbool.h>
 #include <stdint.h>
@@ -28,14 +27,8 @@
  * @param Bd_t
  * @param C_t
  * @param D_t
- * @param Ns Number of points in local trajectory
  *
  */
-
-#define Ns 10
-double X_loc[Ns];
-double Y_loc[Ns];
-double Psi_loc[Ns];
 
 // sign value for double
 int sign(double value)
@@ -91,11 +84,8 @@ extern void trajectory_controller(double *traj, int32_t *traj_size, double X_est
                                   double v, double lr, double lf, double lambda, double k1, double k2, double e1_max,
                                   double Ad_t, double Bd_t, double C_t, double D_t, double *roll_ref,
                                   int32_t *closestpoint_idx_out, double *e1_out, double *e2_out,
-                                  double *delta_ref_psi_out, double *lat_err_cont, double *head_err_cont, double reset,
-                                  int32_t abort)
+                                  double *delta_ref_psi_out, double *lat_err_cont, double *head_err_cont, double reset)
 {
-
-    /*
     // Unpack the trajectory
     int size_traj = traj_size[0]; // length of the trajectory
     double X_loc[size_traj];
@@ -110,7 +100,6 @@ extern void trajectory_controller(double *traj, int32_t *traj_size, double X_est
         Psi_loc[counter] = traj[i + 2 * size_traj];
         counter += 1;
     }
-    */
 
     // Second point in traj is current selected closest point
     static int closestpoint_idx;
@@ -120,14 +109,10 @@ extern void trajectory_controller(double *traj, int32_t *traj_size, double X_est
         *closestpoint_idx_out = 0;
     }
 
-    trajectory_selector(traj, traj_size, closestpoint_idx, Ns, reset, X_loc, Y_loc, Psi_loc, X_est, Y_est, Psi_est,
-                        abort);
-    closestpoint_idx = 0;
-
     // Search for closest point (find the closest point going forward, stop when distance increases)
     while (pow(X_loc[closestpoint_idx] - X_est, 2.0) + pow(Y_loc[closestpoint_idx] - Y_est, 2.0) >=
                pow(X_loc[closestpoint_idx + 1] - X_est, 2.0) + pow(Y_loc[closestpoint_idx + 1] - Y_est, 2.0) &&
-           closestpoint_idx <= (*traj_size) - 3)
+           closestpoint_idx <= size_traj - 3)
     {
         closestpoint_idx += 1;
     }

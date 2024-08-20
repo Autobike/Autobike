@@ -3,14 +3,14 @@ close all
 clc
 
 %% User has probably to modify these lines
-traj=readtable('Traj_ref_test\trajectorymat_asta0_circle_3_l.csv');
+traj=readtable('AACircle20m.csv');
 
 % Set method=0 if heading is found by walking with the bike / method=1 if
 % using a start and end point.
-method = 2; 
+method = 0; 
 
 % Method 0 (Read the psi from Kalman filter in LabVIEW)
-bike_psi=-0.3+pi; %Actual heading of the bike or desired trajectory direction
+bike_psi=-1.1; %Actual heading of the bike or desired trajectory direction
 
 % Method 1 (Read them from GPS Data in LabVIEW)
 starting_long = 0; % Start point longitude
@@ -48,7 +48,8 @@ for i=1:length(traj.Var1)
     new_traj_points(i,:)=[traj.Var1(i) traj.Var2(i)]*[cos(diff_angle) sin(diff_angle); -sin(diff_angle) cos(diff_angle)];
 end
 
-new_traj= [new_traj_points new_traj_psi];
+velocity_traj = traj.Var4;
+new_traj= [new_traj_points new_traj_psi velocity_traj];
 
 
 

@@ -1,8 +1,4 @@
-#include "generateAbortTrajectory.h"
-#include <math.h>
 #include <stdint.h>
-#include <stdio.h>
-#include <stdlib.h>
 
 /**
  * Trajectory controller
@@ -19,10 +15,10 @@
  * Parameters:
  * @param Ns                Number of points in the local traj
  */
-void trajectory_selector(double *traj, int32_t *traj_size_in, double closest_point, int Ns, double reset, double *X_loc,
-                         double *Y_loc, double *Psi_loc, double X_est, double Y_est, double Psi_est, int abort)
+extern void trajectory_selector(double *traj, int32_t *traj_size_in, double closest_point, int Ns, double reset,
+                                double *traj_loc)
 {
-    static int ids;
+    static double ids;
     int size_traj = traj_size_in[0]; // length of the trajectory
 
     // Initialize the variables in first iteration
@@ -35,34 +31,6 @@ void trajectory_selector(double *traj, int32_t *traj_size_in, double closest_poi
     // Calculate the initial point of the local_traj_ref
     ids = ids - 1 + closest_point;
 
-    // TODO include abort trajectory support and include guard for end of traj
-
-    int M = ids + Ns; // index of the last point of the local trajectort
-    int counter = ids;
-    // double traj_loc_int[3 * Ns];
-
-    if (abort)
-    {
-        genAbortTraj(X_loc, Y_loc, Psi_loc, X_est, Y_est, Psi_est, Ns);
-        return;
-    }
-
-    if (M < size_traj)
-    {
-        for (int i = 0; i < Ns; i++)
-        {
-            X_loc[i] = traj[counter + i];
-            Y_loc[i] = traj[(*traj_size_in) + counter + i];
-            Psi_loc[i] = traj[(*traj_size_in) * 2 + counter + i];
-        }
-    }
-    else
-    {
-        genAbortTraj(X_loc, Y_loc, Psi_loc, X_est, Y_est, Psi_est, Ns);
-    }
-    return;
-
-    /*
     // Transform the traj matrix into usable information
     double X_traj[size_traj];
     double Y_traj[size_traj];
@@ -74,7 +42,6 @@ void trajectory_selector(double *traj, int32_t *traj_size_in, double closest_poi
         Y_traj[j] = traj[j + size_traj];
         Psi_traj[j] = traj[j + 2 * size_traj];
     }
-
 
     // Select the local_traj from traj
     int M = ids + Ns; // index of the last point of the local trajectort
@@ -114,5 +81,5 @@ void trajectory_selector(double *traj, int32_t *traj_size_in, double closest_poi
     {
         traj_loc[i] = traj_loc_int[i];
     }
-    */
 }
+
