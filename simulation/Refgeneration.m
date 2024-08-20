@@ -15,6 +15,18 @@
 % [x,y,psi,v,t]=Refgeneration({'y','t','x'},'Traj_ref_test\traj2.csv');
 % [x,y,psi,v,t]=Refgeneration({'v','t','psi'},'Traj_ref_test\traj3.csv');
 % [x,y,psi,v,t]=Refgeneration({'x','y','v'},'Traj_ref_test\traj4.csv');
+
+% How to get trajectorymat.csv which is uploaded to myRIO:
+   % Create your trajectory as specified above. 
+   % Use Refgeneration.m function to get the elements of trajectorymat.
+   % Make a table in form of-->[Xref,Yref,Psiref,Vref].
+   % Use csvwrite to save the table as trajectorymat.csv.
+
+   % If the trajectory start heading angle needs to be changed from the
+   % heading angle in the beginning of your trajectorymat.csv, rotate your
+   % trajectory using rotate_traj.m. Then your file is ready to be uploaded
+   % on myRIO.
+   
 % Authors: Armin Khorsandi & Ayman Alzein summer 2024
 
 function [x,y,psi,v,t] = Refgeneration(layout,filePath)
