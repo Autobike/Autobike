@@ -12,10 +12,12 @@
       - [WiFi connection](#wifi-connection)
       - [Finishing up connection](#finishing-up-connection)
     - [Prepare a bike trajectory in Matlab, select correct bike parameters](#prepare-a-bike-trajectory-in-matlab-select-correct-bike-parameters)
-      - [Run startup\_labview.m](#run-startup_labviewm)
+      - [Run startup\_labview\_v2.m](#run-startup_labview_v2m)
     - [Upload the reference trajectory and bike parameters into myRio flash memory](#upload-the-reference-trajectory-and-bike-parameters-into-myrio-flash-memory)
     - [Date and time configuration on NI MAX](#date-and-time-configuration-on-ni-max)
     - [Run the code](#run-the-code)
+      - [Main.vi running potential errors](#mainvi-running-potential-errors)
+        - [myRIO freezing](#myrio-freezing)
   - [Running the bike outside - trajectory test](#running-the-bike-outside---trajectory-test)
   - [Accessing the logging data on FileZilla](#accessing-the-logging-data-on-filezilla)
     - [Plotting the logging data](#plotting-the-logging-data)
@@ -174,13 +176,14 @@ Finally, close the myRIO Properties window, right click the "myRIO-1900" entry a
 ### Prepare a bike trajectory in Matlab, select correct bike parameters ###
 
 To run a test drive on a bike the following information needs to be specified;
+- Create a trajectory file according to `Refgeneration.m` description.
 -	the reference trajectory stored in a file with default name `trajectorymat.csv`.
 -	The correct parameters describing the bike with default name `matrixmat.csv`.
-The file `startup_labview.m` is intended for this. You might need to edit the following information:
+The file `startup_labview_v2.m` is intended for this. You might need to edit the following information:
 -	on line 18 you can specify one of the pre-programmed bikes. Parameters for the specified bike are then set when the file is executed.
 -	On line 22-28 it is explained how the reference trajectory is defined.
   
-#### Run startup_labview.m ####
+#### Run startup_labview_v2.m ####
 
 -	The reference trajectory is plotted and stored in `trajectorymat.csv` (depending on setting on row 19 it maybe already existed).
 -	An input window is opened, first field “Enter a bike type” you indicate a folder, which must exist in the folder `Parameters_matrixmat`. In that folder a file with bike parameters is created, default name `matrixmat.csv`.
@@ -188,6 +191,8 @@ The file `startup_labview.m` is intended for this. You might need to edit the fo
 ### Upload the reference trajectory and bike parameters into myRio flash memory ###
 
 This is done using `FileZilla` and the two files `trajectorymat.csv` and `matrixmat.csv`.
+
+Name the files with the following names: `new_trajectoryfile.csv` and `matrixmat_default.csv` to have the standard names used in LabVIEW.
 
 Make sure the laptop is connected to the bike's myRIO **by  ...**
 
@@ -246,25 +251,49 @@ The bike must stand still while calibrating.
 After running, click `Save`, then `Load`, then `Done`.
 * `Main.vi` - The main program to run the motors and control algorithms of the bike.
 
+#### Main.vi running potential errors
+
+The potential errors when running the code on LabVIEW, can be written here for users to know the potential problems and their solutions if faced.
+
+##### myRIO freezing
+
+Sometimes, it can happen that someone has default values of zeros for task periods on his computer. When that computer is connected to the bike and runs configuration.VI in LabVIEW, it can happen that the task periods are changed to 0. In that case, if the user does not see them, and runs main.vi,  myRIO freezes and the connection will be lost and it is not possible to connect to myRIO anymore. 
+
+To solve this issue: myRIO needs to be restarted, and the values above which are correct values for the task periods, should be inputted in configuration.VI in order to solve this problem. 
+
+![](assets/202408820.jpeg)  
+
 ## Running the bike outside - trajectory test 
 
 Make sure to keep a distance of less than 80 meters between the bike and the computer, or else it might disconnect the myRIO.
 Someone has to stay near the bike at all times, and be ready to run with it, catch it and emergency stop it if necessary.
 
-Follow the procedure `Run the code`.
+Follow the procedure:
 
-The person in charge of the bike has to hold it as straight as possible : 0 steering angle, 0 roll. 
-On the main VI on the laptop : click `Reset and Init trajectory`. Click once more to turn the green light off.
+Before running `Main.vi`, ensure that:
 
-When you're ready, put a constant `speed`.
+- Enable Steering Motor switch is Off.
+- Veclotiy reference selector is on Manual Vref, and the speed is zero.
+
+`Run the code`.
+
+Someone has to make sure that the front wheel is as straight as possible. On the laptop : `Reset Steering Motor Encoder`.
+
+Check that the IMU accelerometer on Y-axis value is very close to zero, if not, the value it has needs to be added into accelerometer bias in `Configuration.vi`, saved, loaded and then back to `Main.vi`.
+
+On the `Main.vi` on the laptop : click `Reset and Init trajectory`. Click once more to turn the green light off.
+
+If interpolation is desired to be activated, activate interpolation. If not, give a constant velocity(V) in m/s for matrixmat generation.
+
+When you're ready, put a `speed`.
 
 The person running with the bike has to make sure it is going as straight as possible.
 
-On the computer : `Reset Steering Motor Encoder` and `Enable Steering Motor`.
+On the computer : `Enable Steering Motor`.
 
 The one running alongside the bike can now let the bike go.
 
-When you want to stop the test, the person catches the bike and presses emergency stop, or the test can be shut down by clicking on the stop button in LabView.
+When you want to stop the test, the person catches the bike and presses emergency stop, or the test can be shut down by clicking on the stop button in LabVIEW.
 
 ## Accessing the logging data on FileZilla
 
