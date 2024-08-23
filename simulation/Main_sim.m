@@ -1,3 +1,16 @@
+% TODO describe the purpose of this file,
+% what is done if no test is performed, what is done of tests are
+% performed?
+
+% TODO many variables defined in this file are then used in the simulink models, read read from workspace.
+% Both in functions and in blocks. There is no overview which they are in
+% this file. This must be fixed. In simulink, make one block where values
+% are read from workspace, from there, hidden connections to the places
+% where they are used in Simulink.In this file, make clear which the
+% variables are.
+
+
+
 %% clear the possible remnant on previous running
 set(0,'defaulttextinterpreter','none');
 dbclear all; %Remove breakpoints
@@ -7,7 +20,7 @@ clc;
 
 %% Simulation Settings and Bike and General Parameters
 % Gravitational Acceleration
-    g = 9.81;
+    gg = 9.81;
 % Name of the model
     model = 'Main_bikesim';
 % Simulation time
@@ -21,7 +34,7 @@ clc;
     hor_dis = 10; %tra cosa?
 
 %Constant Speed [m/s]
-    % v = 3;    
+     vv = 3;    
 
 % Open the Simulink Model
     open([model '.slx']);
@@ -96,20 +109,44 @@ end
 %SHAPE options:sharp_turn, line, infinite, circle, ascent_sin, smooth_curve
 type = 'circle';
 % Distance between points
-ref_dis = 0.5;
+ref_dis = 0.005;
 % Number of reference points
-N = 80; 
+N = 200; 
 % Scale (only for infinite and circle)
 scale = 40; 
 
 % [Xref,Yref,Psiref] = Trajectory(Run_tests);
-% [Xref,Yref,Psiref,Vref,t]=Refgeneration({'x','y','v'},'AATraj.csv');
 
-[Xref,Yref,Psiref,Vref,t]=Refgeneration({'x','y','v'},'AATrajCorrectedSpeed.csv');
+[Xref,Yref,Psiref] = ReferenceGenerator(type,ref_dis,N,scale);
+
+% Calculating time vector given a constant speed
+%TODO this should probably be changed, vv is used now, Vref or ttt should be
+% obtained differently
+ttt=[0;sqrt((Xref(1:end-1)-Xref(2:end)).^2+(Yref(1:end-1)-Yref(2:end)).^2)/vv];
+t_ref=cumsum(ttt);
+ttt(1)=ttt(2); % avoid 0 sampling time
+[Xref,Yref,Psiref,Vref]=Refgeneration({'t','x','y'},[t_ref, Xref,Yref]);
+
+temp=Yref;
+Yref=Xref;
+Xref=temp;
+Psiref=pi/2-Psiref;
+
+%load('test')
+% ind=1:2:200;
+% [Xref]=res(ind,1);
+% [Yref]=res(ind,2);
+% [Psiref]=res(ind,3);
+% [Vref]=res(ind,4);
+% [ttt]=res(ind,5);
+
+% read trajectory from file
+%[Xref,Yref,Psiref,Vref,ttt]=Refgeneration({'x','y','v'},'AATrajCorrectedSpeed.csv');
 % ref_traj = [Xref,Yref,Psiref,Vref];
+
+
 % csvwrite("AATrajectory.csv",ref_traj);
 
-Vref = Vref;
 v_init=Vref(1); % needed for lqr, referenceTest, simulink>atateestimator
 
 
@@ -129,7 +166,8 @@ Nn = size(test_curve,1); % needed for simulink
 %% Reference test (warnings and initialization update)
 if ((Run_tests == 0 || Run_tests == 2) && init == 0)
 
-    Output_reference_test = referenceTest(test_curve,hor_dis,Ts,initial_pose,v_init, ref_dis);
+    %Output_reference_test = referenceTest(test_curve,hor_dis,Ts,initial_pose,v_init, ref_dis);
+    Output_reference_test = referenceTest(test_curve,hor_dis,Ts,vv);
     
     % update initial states if offset is detected
     initial_state.x = Output_reference_test(1);
@@ -141,13 +179,14 @@ if ((Run_tests == 0 || Run_tests == 2) && init == 0)
 end
 
 %% Unpacked bike_params
-h = bike_params.h_mod;
-lr = bike_params.lr_mod;
-lf = bike_params.lf_mod; 
-lambda = bike_params.lambda_mod;
-c = bike_params.c_mod;
-m = bike_params.m_mod;
-h_imu = bike_params.IMU_height_mod;
+[hh,lr,lf,lambda,cc,mm,h_imu,Tt]=UnpackBike_parameters(bike_params);
+% hh = bike_params.h_mod;
+% lr = bike_params.lr_mod;
+% lf = bike_params.lf_mod; 
+% lambda = bike_params.lambda_mod;
+% cc = bike_params.c_mod;
+% mm = bike_params.m_mod;
+% h_imu = bike_params.IMU_height_mod;
 
 T = TransMatrix(bike_params);                                             
 
@@ -211,6 +250,9 @@ else % If the speed is going to be a constant all the time, then v min and max a
     V_max= 3;
 end
 
+
+% construct vector of velocities for which linear Kalman filter is
+% obtained, ie, matrices for each velocity
 V_stepSize=0.1;
 
 V_n=ceil((V_max-V_min)/V_stepSize)+1;
@@ -238,7 +280,7 @@ load('Q_and_R_backup_red_bike.mat');
 format long
 for i=1: V_n
     % Kalman filtering for both cases - with/without GPS - 
-    [K_GPS(i,:,:),K_noGPS(i,:,:),counter,A_d(i,:,:),B_d(i,:,:),C(i,:,:),D(i,:,:)] = KalmanFilter(V(i),h,lr,lf,lambda,g,c,h_imu,Ts,Q,R);
+    [K_GPS(i,:,:),K_noGPS(i,:,:),counter,A_d(i,:,:),B_d(i,:,:),C(i,:,:),D(i,:,:)] = KalmanFilter(V(i),hh,lr,lf,lambda,gg,cc,h_imu,Ts,Q,R);
 
     % Transfer function in heading in wrap traj
     num = 1;
@@ -270,6 +312,8 @@ Bd_t = B_t*Ts;
 %% Save matrix in XML/CSV
 % matrixmat = [A_d; B_d'; C; D';K_GPS; K_noGPS]; 
 % SaveInCSV(matrixmat,test_curve);
+
+linearizedMatrices=[Ad_t, Bd_t, C_t, D_t, V'];
 
 %% Start the Simulation
 if Run_tests == 0 || Run_tests == 2

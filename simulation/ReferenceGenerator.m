@@ -56,9 +56,14 @@ function [Xref,Yref,Psiref] = ReferenceGenerator(type,ref_dis,N,scale)
     Xref=xref';%change row into column
     Yref=yref';%change row into column
     Psiref=psiref';%change row into column
+
+    %start in origine
+    Xref=Xref-Xref(1);
+    Yref=Yref-Yref(1);
     
-    %Duplicate first value for first iteration in simulink (For proper delay value)
-    Xref = [Xref(1); Xref];
-    Yref = [Yref(1); Yref];
-    Psiref = [Psiref(1); Psiref(1); Psiref];
+    Psiref = [Psiref(1); Psiref];
+    % %Duplicate first value for first iteration in simulink (For proper delay value)
+    % Xref = [Xref(1); Xref];
+    % Yref = [Yref(1); Yref];
+    % Psiref = [Psiref(1); Psiref(1); Psiref];
 end
