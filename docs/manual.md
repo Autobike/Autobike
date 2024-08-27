@@ -176,17 +176,14 @@ Finally, close the myRIO Properties window, right click the "myRIO-1900" entry a
 ### Prepare a bike trajectory in Matlab, select correct bike parameters ###
 
 To run a test drive on a bike the following information needs to be specified;
-- Create a trajectory file according to `Refgeneration.m` description.
+- Create a trajectory according to `ReferenceGenerator.m` and `Refgeneration.m` description. A new trajectory can be generated with help of these files, or an existing can be read from a csv file.
 -	the reference trajectory stored in a file with default name `trajectorymat.csv`.
--	The correct parameters describing the bike with default name `matrixmat.csv`.
-The file `startup_labview_v2.m` is intended for this. You might need to edit the following information:
--	on line 18 you can specify one of the pre-programmed bikes. Parameters for the specified bike are then set when the file is executed.
--	On line 22-28 it is explained how the reference trajectory is defined.
+-	The parameters describing the bike, used by the algorithms, are stored in a file with default name `matrixmat.csv`.
+The file `startup_labview_v2.m` is intended to generate both files. You indicate type of bike and filenemes in the beginning of `startup_labview_v2.m`.
   
 #### Run startup_labview_v2.m ####
-
--	The reference trajectory is plotted and stored in `trajectorymat.csv` (depending on setting on row 19 it maybe already existed).
--	An input window is opened, first field “Enter a bike type” you indicate a folder, which must exist in the folder `Parameters_matrixmat`. In that folder a file with bike parameters is created, default name `matrixmat.csv`.
+- Edit so that trajectory, bike are correct and also places for the files. Then run startup_labview_v2.m
+-	An input window is opened where some of the information can be changed.
 
 ### Upload the reference trajectory and bike parameters into myRio flash memory ###
 
