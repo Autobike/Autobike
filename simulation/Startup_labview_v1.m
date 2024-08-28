@@ -1,4 +1,5 @@
 %% clear the possible remnant on previous running
+% old use ver 2
 
 set(0,'defaulttextinterpreter','none');
 dbclear all;

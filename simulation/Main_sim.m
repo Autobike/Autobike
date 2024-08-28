@@ -60,56 +60,56 @@ clc;
     compare_flag = 0;
 % Activate gain scheduling for system matrices and gains that depend on the
 % velocity. Implemented on Kalman Filter and Heading dot contribution transfer function
-    scheduling = 1;
-% Activate the interpolation for the gain scheduling. Interpolation is
-% always supposed to be used when scheduling = 1. 
-    interpolation = 1;  % used in Simulink (you can only use interpolation if scheduling = 1)
-
-%% Initial states
-if init == 1
-
-    % data_lab = readtable('Logging_data\Test_session_14_06\data_8.csv');
-    data_lab = readtable('Logging_data\Test_session_27_06\data_15.csv');
-
-    %Delete the data before reseting the trajectory and obtain X/Y position
-    reset_traj = find(data_lab.ResetTraj==1,1,'last');
-    data_lab(1:reset_traj,:) = [];
-    longitude0 = deg2rad(11);
-    latitude0 = deg2rad(57);
-    Earth_rad = 6371000.0;
-    
-    X = Earth_rad * (data_lab.LongGPS_deg_ - longitude0) * cos(latitude0);
-    Y = Earth_rad * (data_lab.LatGPS_deg_ - latitude0);
-
-    % Obtain the relative time of the data
-%     Y = round(X,N) 
-    data_lab.Time = round((data_lab.Time_ms_- data_lab.Time_ms_(1))*0.001, 4);
-    index = find(data_lab.Time == time_start);
-
-    initial_state.roll = data_lab.StateEstimateRoll_rad_(index);
-    initial_state.roll_rate = data_lab.StateEstimateRollrate_rad_s_(index);
-    initial_state.steering = data_lab.StateEstimateDelta_rad_(index);
-    initial_state_estimate.x = data_lab.StateEstimateX_m_(index) - X(1);
-    initial_state_estimate.y = data_lab.StateEstimateY_m_(index) - Y(1);
-    initial_state_estimate.heading = data_lab.StateEstimatePsi_rad_(index);
-
-elseif init == 0
-    initial_state.roll = deg2rad(0);
-    initial_state.roll_rate = deg2rad(0);
-    initial_state.steering = deg2rad(0);
-    initial_state.x = 1; %why 1 and not 0?
-    initial_state.y = 0;
-    initial_state.heading = deg2rad(0);
-    initial_pose=[initial_state.x; initial_state.y; initial_state.heading];
-else
-    disp('Bad initialization');
-end
+    scheduling = 0;
+% Activate the interpolation for the gain scheduling instead of taking
+% matrices for nearest speed. Normally yes.
+    interpolation = 0;  % used in Simulink (you can only use interpolation if scheduling = 1)
+    if scheduling==0, interpolation = 0; end  % must be 0 if no scheduling
+% %% Initial states
+% if init == 1
+% disp('reading from file')
+%     % data_lab = readtable('Logging_data\Test_session_14_06\data_8.csv');
+% %    data_lab = readtable('Logging_data\Test_session_27_06\data_15.csv');
+% 
+%     %Delete the data before reseting the trajectory and obtain X/Y position
+%     reset_traj = find(data_lab.ResetTraj==1,1,'last');
+%     data_lab(1:reset_traj,:) = [];
+%     longitude0 = deg2rad(11);
+%     latitude0 = deg2rad(57);
+%     Earth_rad = 6371000.0;
+% 
+%     X = Earth_rad * (data_lab.LongGPS_deg_ - longitude0) * cos(latitude0);
+%     Y = Earth_rad * (data_lab.LatGPS_deg_ - latitude0);
+% 
+%     % Obtain the relative time of the data
+% %     Y = round(X,N) 
+%     data_lab.Time = round((data_lab.Time_ms_- data_lab.Time_ms_(1))*0.001, 4);
+%     index = find(data_lab.Time == time_start);
+% 
+%     initial_state.roll = data_lab.StateEstimateRoll_rad_(index);
+%     initial_state.roll_rate = data_lab.StateEstimateRollrate_rad_s_(index);
+%     initial_state.steering = data_lab.StateEstimateDelta_rad_(index);
+%     initial_state_estimate.x = data_lab.StateEstimateX_m_(index) - X(1);
+%     initial_state_estimate.y = data_lab.StateEstimateY_m_(index) - Y(1);
+%     initial_state_estimate.heading = data_lab.StateEstimatePsi_rad_(index);
+% 
+% elseif init == 0
+%     initial_state.roll = deg2rad(0);
+%     initial_state.roll_rate = deg2rad(0);
+%     initial_state.steering = deg2rad(0);
+%     initial_state.x = 1; %why 1 and not 0?
+%     initial_state.y = 0;
+%     initial_state.heading = deg2rad(0);
+%     initial_pose=[initial_state.x; initial_state.y; initial_state.heading];
+% else
+%     disp('Bad initialization');
+% end
 
 %% Reference trajectory generation
 %SHAPE options:sharp_turn, line, infinite, circle, ascent_sin, smooth_curve
-type = 'circle';
+type = 'infinite';
 % Distance between points
-ref_dis = 0.005;
+ref_dis = 0.05;
 % Number of reference points
 N = 200; 
 % Scale (only for infinite and circle)
@@ -119,6 +119,11 @@ scale = 40;
 
 [Xref,Yref,Psiref] = ReferenceGenerator(type,ref_dis,N,scale);
 
+% read trajectory from file
+%[Xref,Yref,Psiref,Vref,ttt]=Refgeneration({'x','y','v'},'AATrajCorrectedSpeed.csv');
+%[Xref,Yref,Psiref]=Refgeneration({'x','y','v'},'AATrajCorrectedSpeed.csv');
+% ref_traj = [Xref,Yref,Psiref,Vref];
+
 % Calculating time vector given a constant speed
 %TODO this should probably be changed, vv is used now, Vref or ttt should be
 % obtained differently
@@ -127,32 +132,10 @@ t_ref=cumsum(ttt);
 ttt(1)=ttt(2); % avoid 0 sampling time
 [Xref,Yref,Psiref,Vref]=Refgeneration({'t','x','y'},[t_ref, Xref,Yref]);
 
-temp=Yref;
-Yref=Xref;
-Xref=temp;
-Psiref=pi/2-Psiref;
-
-%load('test')
-% ind=1:2:200;
-% [Xref]=res(ind,1);
-% [Yref]=res(ind,2);
-% [Psiref]=res(ind,3);
-% [Vref]=res(ind,4);
-% [ttt]=res(ind,5);
-
-% read trajectory from file
-%[Xref,Yref,Psiref,Vref,ttt]=Refgeneration({'x','y','v'},'AATrajCorrectedSpeed.csv');
-% ref_traj = [Xref,Yref,Psiref,Vref];
-
-
-% csvwrite("AATrajectory.csv",ref_traj);
-
 v_init=Vref(1); % needed for lqr, referenceTest, simulink>atateestimator
 
-
-
-test_curve=[Xref,Yref,Psiref];
-Nn = size(test_curve,1); % needed for simulink
+%test_curve=[Xref,Yref,Psiref];
+Nn = length(Xref); % needed for simulink
 
 %% OWN TRAJECTORY
 % if Run_tests == 2
@@ -164,29 +147,25 @@ Nn = size(test_curve,1); % needed for simulink
 % end
 
 %% Reference test (warnings and initialization update)
-if ((Run_tests == 0 || Run_tests == 2) && init == 0)
-
-    %Output_reference_test = referenceTest(test_curve,hor_dis,Ts,initial_pose,v_init, ref_dis);
-    Output_reference_test = referenceTest(test_curve,hor_dis,Ts,vv);
+%if ((Run_tests == 0 || Run_tests == 2) && init == 0)
+    %referenceTest(test_curve,hor_dis,Ts,initial_pose,v_init, ref_dis);
+    referenceTest([Xref Yref Psiref],hor_dis,Ts,vv);
     
     % update initial states if offset is detected
-    initial_state.x = Output_reference_test(1);
-    initial_state.y = Output_reference_test(2);
-    initial_state.heading = Output_reference_test(3);
-    initial_state.heading = Psiref(3);
-    initial_pose = [initial_state.x; initial_state.y; initial_state.heading];
+    initial_state.x = Xref(1);
+    initial_state.y = Yref(1);
+    initial_state.heading = Psiref(1);
+
+    initial_state.roll = deg2rad(0);
+    initial_state.roll_rate = deg2rad(0);
+    initial_state.steering = deg2rad(0);
+    initial_pose=[initial_state.x; initial_state.y; initial_state.heading];
+
     initial_state_estimate = initial_state;
-end
+%end
 
 %% Unpacked bike_params
 [hh,lr,lf,lambda,cc,mm,h_imu,Tt]=UnpackBike_parameters(bike_params);
-% hh = bike_params.h_mod;
-% lr = bike_params.lr_mod;
-% lf = bike_params.lf_mod; 
-% lambda = bike_params.lambda_mod;
-% cc = bike_params.c_mod;
-% mm = bike_params.m_mod;
-% h_imu = bike_params.IMU_height_mod;
 
 T = TransMatrix(bike_params);                                             
 
@@ -244,18 +223,23 @@ D_balancing_inner = 0;
 if scheduling
     V_min= min(Vref(:));
     V_max= max(Vref(:));
-else % If the speed is going to be a constant all the time, then v min and max are same and put them down here. Defaulted to 3 but
-     % user can change it if desired.
-    V_min= 3;
-    V_max= 3;
+    V_min=min([V_min,V_max-0.3]); % This is to make sure there is a non-zero interval for the scheduling
+    v_max=max([V_max, V_min+0.6]);  % This can be improved. Interval is set ad-hoc
+    if (V_max-V_min)<0.05 
+        disp('Warning, no speed variation in Vref, scheduling matrices becomes identical'); 
+        disp('Simulation does not work in this case.');
+    end
+else % No scheduling, constant matrices calculated for one fixed speed
+    V_min= Vref(2);
+    V_max= V_min;
 end
 
 
 % construct vector of velocities for which linear Kalman filter is
 % obtained, ie, matrices for each velocity
-V_stepSize=0.1;
+V_stepSize=0.1; % design choice
 
-V_n=ceil((V_max-V_min)/V_stepSize)+1;
+V_n=ceil((V_max-V_min)/V_stepSize)+1; % number of velocities for which linearized matrices are calculated.
 V=linspace(V_min,V_max,V_n);
 
 V=round(V,1);
@@ -275,6 +259,7 @@ B_t=zeros(V_n,1);
 C_t=zeros(V_n,1);
 D_t=zeros(V_n,1);
 
+% Q & R are calculated in a different file
 load('Q_and_R_backup_red_bike.mat');
 
 format long
@@ -292,16 +277,17 @@ K_noGPS=permute(K_noGPS,[1,3,2]);
 A_d=permute(A_d,[1,3,2]);
 C=permute(C,[1,3,2]);
 
+% TODO, where is this table used?
 % Storing all the calculated matrices and gains.
 GainsTable = table(V',K_GPS,K_noGPS,A_d,B_d,C,D, 'VariableNames', {'V','K_GPS','K_noGPS','A_d','B_d','C','D'});
 
 
-
+% looks like the controller is not speed dependent, one fixed speed
 %% The LQR controller
 [k1,k2,e1_max,e2_max] = LQRcontroller(v_init,lr,lf);
 
 %% Transfer function for heading in wrap traj
-%feed forward trasfer function for d_psiref to steering reference (steering contribution for heading changes)
+%feed forward transfer function for d_psiref to steering reference (steering contribution for heading changes)
 
 % Discretize the ss 
 % % Used in Simulink
@@ -316,6 +302,8 @@ Bd_t = B_t*Ts;
 linearizedMatrices=[Ad_t, Bd_t, C_t, D_t, V'];
 
 %% Start the Simulation
+
+
 if Run_tests == 0 || Run_tests == 2
 tic
 try 
@@ -335,7 +323,11 @@ toc
 % 'bikedata_sim_real_states_1.csv' and 'bikedata_sim_est_1.csv after
 % running main_sim.m the first time and change compare_flag to 1 before
 % running main_sim.m the second time.
-PlottingResults(test_curve,Results,compare_flag);
+%PlottingResults(test_curve,Results,compare_flag);
+
+
+Tnumber = 'No test case: General simulation run';
+Plot_bikesimulation_results(Tnumber, [Xref,Yref,Psiref], Results, compare_flag);
 end
 
 %% Test cases for validation

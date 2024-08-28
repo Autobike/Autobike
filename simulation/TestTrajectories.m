@@ -1,4 +1,5 @@
 % TestTrajectories
+% this file should be edited or removed.
 
 
 % 0 = Don't run test cases & save measurementdata in CSV || 1 = run test cases || 2 = generate ref yourself

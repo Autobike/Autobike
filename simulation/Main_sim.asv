@@ -62,7 +62,7 @@ clc;
 % velocity. Implemented on Kalman Filter and Heading dot contribution transfer function
     scheduling = 1;
 % Activate the interpolation for the gain scheduling. Interpolation is
-% always supposed to be used when scheduling = 1. 
+% always supposed to be used when scheduling = 0. 
     interpolation = 1;  % used in Simulink (you can only use interpolation if scheduling = 1)
 
 %% Initial states
@@ -111,33 +111,45 @@ type = 'circle';
 % Distance between points
 ref_dis = 0.05;
 % Number of reference points
-N = 8; 
+N = 20; 
 % Scale (only for infinite and circle)
 scale = 40; 
 
 % [Xref,Yref,Psiref] = Trajectory(Run_tests);
-% [Xref,Yref,Psiref,Vref,t]=Refgeneration({'x','y','v'},'AATraj.csv');
-
 
 [Xref,Yref,Psiref] = ReferenceGenerator(type,ref_dis,N,scale);
+
+% read trajectory from file
+[Xref,Yref,Psiref,Vref,ttt]=Refgeneration({'x','y','v'},'AATrajCorrectedSpeed.csv');
+%[Xref,Yref,Psiref]=Refgeneration({'x','y','v'},'AATrajCorrectedSpeed.csv');
+% ref_traj = [Xref,Yref,Psiref,Vref];
 
 % Calculating time vector given a constant speed
 %TODO this should probably be changed, vv is used now, Vref or ttt should be
 % obtained differently
 ttt=[0;sqrt((Xref(1:end-1)-Xref(2:end)).^2+(Yref(1:end-1)-Yref(2:end)).^2)/vv];
 t_ref=cumsum(ttt);
-ttt(1)=ttt(2); % avoid 0 sampling time
-[Xref,Yref,Psiref,Vref]=Refgeneration({'t','x','y'},[t_ref, Xref,Yref]);
-load('test')
-[Xref,Yref,Psiref,Vref,ttt]=res(:,1);
-[Xref,Yref,Psiref,Vref,ttt]=res(:,2);
-[Xref,Yref,Psiref,Vref,ttt]=res(:,3);
-[Xref,Yref,Psiref,Vref,ttt]=res(:,1);
-[Xref,Yref,Psiref,Vref,ttt]=res(:,4);
+% ttt(1)=ttt(2); % avoid 0 sampling time
+%[Xref,Yref,Psiref,Vref]=Refgeneration({'t','x','y'},[t_ref, Xref,Yref]);
 
-% read trajectory from file
+%TOO smal interval doesn't work
+%Vref=Vref+0.5*randn(size(Vref));
+
+temp=Yref;
+Yref=Xref;
+Xref=temp;
+Psiref=pi/2-Psiref;
+
+%load('test')
+% ind=1:2:200;
+% [Xref]=res(ind,1);
+% [Yref]=res(ind,2);
+% [Psiref]=res(ind,3);
+% [Vref]=res(ind,4);
+% [ttt]=res(ind,5);
+
+
 %[Xref,Yref,Psiref,Vref,ttt]=Refgeneration({'x','y','v'},'AATrajCorrectedSpeed.csv');
-% ref_traj = [Xref,Yref,Psiref,Vref];
 
 
 % csvwrite("AATrajectory.csv",ref_traj);
@@ -160,7 +172,6 @@ Nn = size(test_curve,1); % needed for simulink
 
 %% Reference test (warnings and initialization update)
 if ((Run_tests == 0 || Run_tests == 2) && init == 0)
-
     %Output_reference_test = referenceTest(test_curve,hor_dis,Ts,initial_pose,v_init, ref_dis);
     Output_reference_test = referenceTest(test_curve,hor_dis,Ts,vv);
     
@@ -168,7 +179,7 @@ if ((Run_tests == 0 || Run_tests == 2) && init == 0)
     initial_state.x = Output_reference_test(1);
     initial_state.y = Output_reference_test(2);
     initial_state.heading = Output_reference_test(3);
-    initial_state.heading = Psiref(3);
+   % initial_state.heading = Psiref(3);  % ????
     initial_pose = [initial_state.x; initial_state.y; initial_state.heading];
     initial_state_estimate = initial_state;
 end
@@ -239,16 +250,21 @@ D_balancing_inner = 0;
 if scheduling
     V_min= min(Vref(:));
     V_max= max(Vref(:));
-else % If the speed is going to be a constant all the time, then v min and max are same and put them down here. Defaulted to 3 but
-     % user can change it if desired.
-    V_min= 3;
-    V_max= 3;
+    V_min=min([V_min,V_max-0.3]); % This is to make sure there is a non-zero interval for the scheduling
+    v_max=max([V_max, V_min+0.6]);  % This can be improved. Interval is set ad-hoc
+    if (V_max-V_min)<0.05 
+        disp('Warning, no speed variation in Vref, scheduling matrices becomes identical'); 
+        disp('Simulation does not work in this case.');
+    end
+else % No scheduling, constant matrices calculated for one fixed speed
+    V_min= Vref(2);
+    V_max= V_min;
 end
 
 
 % construct vector of velocities for which linear Kalman filter is
 % obtained, ie, matrices for each velocity
-V_stepSize=0.1;
+V_stepSize=0.1; % design choice
 
 V_n=ceil((V_max-V_min)/V_stepSize)+1;
 V=linspace(V_min,V_max,V_n);
@@ -311,6 +327,14 @@ Bd_t = B_t*Ts;
 linearizedMatrices=[Ad_t, Bd_t, C_t, D_t, V'];
 
 %% Start the Simulation
+
+int=1:2;
+intialS=[Psiref(int) Vref(int) Xref(int) Yref(int) ttt(int)]
+Results=sim(model); 
+
+3
+return
+4
 if Run_tests == 0 || Run_tests == 2
 tic
 try 
@@ -330,7 +354,11 @@ toc
 % 'bikedata_sim_real_states_1.csv' and 'bikedata_sim_est_1.csv after
 % running main_sim.m the first time and change compare_flag to 1 before
 % running main_sim.m the second time.
-PlottingResults(test_curve,Results,compare_flag);
+%PlottingResults(test_curve,Results,compare_flag);
+
+
+Tnumber = 'No test case: General simulation run';
+Plot_bikesimulation_results(Tnumber, [Xref,Yref,Psiref], Results, compare_flag);
 end
 
 %% Test cases for validation

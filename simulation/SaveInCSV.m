@@ -1,7 +1,14 @@
 function [] = SaveInCSV(matrixmat,test_curve)
-filename_matrix = 'matrixmat.csv'; % Specify the filename
+% 
+%SaveInCSV(matrixmat,test_curve)
+%
+%
+
+filename_matrix = 'matrixmat.csv'; % filename for bike parameters
+filename_trajectory = 'trajectorymat.csv'; % filename for trajectory
+
 csvwrite(filename_matrix, matrixmat); % Write the matrix to the CSV file
 
-filename_trajectory = 'trajectorymat.csv'; % Specify the filename
 csvwrite(filename_trajectory, test_curve); % Write the matrix to the CSV file
+
 end

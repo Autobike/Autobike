@@ -1,5 +1,9 @@
 function [Xref,Yref,Psiref] = Trajectory(Run_tests)
-% Use a generated trajectory
+% [Xref,Yref,Psiref] = Trajectory(Run_tests)
+% 
+% Reads a file containing a stored trajectory.
+% This file seems unnecessary. (Jonas)
+
 % traj = readtable('Traj_ref_test\trajectorymat_asta0_lat_right.csv');
 % traj = readtable('Traj_ref_test\trajectorymat_asta0_line.csv');
 % traj = readtable('Traj_ref_test\trajectorymat_asta0_infinite.csv');

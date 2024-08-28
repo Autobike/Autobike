@@ -3,7 +3,7 @@
 % will follow as a csv file, inclouding three columns. 
 % these theree columes have to be enough to output
 % [X_ref,Y_ref,V_ref,Psi_ref,t] at each sample. 
-% Any combination in form of [x,y,t] [v,t,psi] and [x,y,v] will work. 
+% [x,y,t] [v,t,psi] and [x,y,v] will work. 
 % any other combination data will lead to an error.
 % How to use: 
 % - The user needs to provide the correct order of the data combination (in the given trajectory CSV file) as the first parameter.  

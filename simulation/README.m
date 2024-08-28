@@ -17,6 +17,11 @@
 % referenceTest(test_curve,hor_dis,Ts,initial_pose,v,ref_dis)
 %
 
+% Use matlab to genererate data for test runs with bikes in Labview
+% ReferenceGenerator.m can be used to generate trajectories
+% Refgeneration.m convert reference trajectories to the correct format
+% SaveInCSV.m store the trajectory in CSV-file, the format used to read in
+%   the trajectory to LabView
 
 % TODO
 % modify Kalman_Q_R_tuner similar to main.m

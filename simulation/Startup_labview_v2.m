@@ -1,6 +1,12 @@
 %% Version 2 of Startup_labview
 
-% Update: 
+% TODO a lot of code is doubled from Main_sim.m this should be removed and,
+% probably put into separate functions which are called from respective
+% file.
+
+% This file generates parameters
+
+% Update since ver1: 
 % - Creates matrixmat including two sets of matrices and gains, based on 
 %   the minimum and maximum velocities to be compatible with the new
 %   version of labview where interpolation is used. Previous version
@@ -9,28 +15,52 @@
 
 
 %% clear the possible remnant on previous running
-clear;
+%clear;
 close all;
 clc;
 
 %% Simulation Settings and Bike Parameters
 
-% General Parameters
-% Gravitational Acceleration
-    g = 9.81;
-% Sampling Time
-    Ts = 0.01; 
 % Choose The Bike - Options: 'red' or 'black'
     bike = 'red';
+    biketype ='red_bike';
+load('Q_and_R_backup_red_bike.mat'); % read Q and R used in the Kalman filter
+
+% file where the reference trajectory can be read, on format according to
+% Refgeneration.m". That format is presently used in simulation.
+trajectotyfile='AATrajCorrectedSpeed.csv';
+
+% Store trajectory on format for Labview in the following file
+trajectoryLabview='AACircle20m.csv';
+
+% Bike parameters for the specific reference trajectory are stored with
+% indicated filename in directory given by "parameters4bike" \ "biketype"
+parameters4bike='Parameters_matrixmat\';
+filename_matrixmat='matrixmat';
+
+% Choose trajectory, can be done using Main_sim, any other, m-file or reading from file
+% Load trajectory file
+%    [Xref,Yref,Psiref,Vref,t]=Refgeneration({'x','y','v'},trajectoryfileSim);
+
+
+% General Parameters
+% Gravitational Acceleration
+    gg = 9.81;
+% Sampling Time
+    Ts = 0.01; 
+
 % Load the parameters of the specified bicycle
     bike_params = LoadBikeParameters(bike);
+
 % Load trajectory file
-    [Xref,Yref,Psiref,Vref,t]=Refgeneration({'x','y','v'},'AATrajCorrectedSpeed.csv');
+%    [Xref,Yref,Psiref,Vref,t]=Refgeneration({'x','y','v'},trajectoryfileSim);
+
 % Constant Speed needed for lqr [m/s]
     v_init = Vref(1); 
+    if abs(v_init-2.5)>1.7, disp('Warning: LQR lateral controler set for low/high speed'); end
 
-%% Initial states
-
+% %% Initial states
+% 
 initial_X = Xref(1);
 initial_Y = Yref(1);
 initial_Psi = Psiref(1);
@@ -43,14 +73,18 @@ initial_states = [initial_X,initial_Y,initial_Psi, initial_roll, initial_roll_ra
 
 %% Unpacked bike_params
 
-h = bike_params.h;
-lr = bike_params.lr;
-lf = bike_params.lf; 
-lambda = bike_params.lambda;
-c = bike_params.c;
-m = bike_params.m;
-h_imu = bike_params.IMU_height; 
-r_wheel = bike_params.r_wheel; 
+[hh,lr,lf,lambda,cc,mm,h_imu,Tt,r_wheel]=UnpackBike_parameters(bike_params);
+% hh = bike_params.h;
+% lr = bike_params.lr;
+% lf = bike_params.lf; 
+% lambda = bike_params.lambda;
+% cc = bike_params.c;
+% mm = bike_params.m;
+% h_imu = bike_params.IMU_height; 
+% r_wheel = bike_params.r_wheel; 
+
+% TODO the follwing parameters should be set for each bike individualy, ie,
+% move into m-file for the bikes.
 
 %% Balancing Controller
 
@@ -73,23 +107,27 @@ B_con=[lr*v_init/(lr+lf);v_init/(lr+lf)];
 %  kk=2.581e-7;
 %  kk=9e-7;
  kk=6e-7;
-%  Q=kk*[100 0;0 1000];
- Q=kk*[1000 0;0 100];
- R=0.2;
+%  Ql=kk*[100 0;0 1000];
+ Ql=kk*[1000 0;0 100];
+ Rl=0.2;
 %  R=0.5;
- [K,S,e] = lqr(A_con,B_con,Q,R);
+ [K,S,e] = lqr(A_con,B_con,Ql,Rl);
  k1=K(1);
  k2=K(2);
-
 
 e2_max=deg2rad(30);% Here is the e2_max we used to calculate e1_max
 e1_max=abs(-k2*e2_max/k1); % k1,k2 has been known, so we can calculate e1_max
 
 %% Calculating gains and matrices which depend on velocity, based on velocity vector which is created below. 
-
-V_min= min(Vref(:));
-V_max= max(Vref(:));
-
+% For speed dependent Kalman filter
+    V_min= min(Vref(:));
+    V_max= max(Vref(:));
+    V_min=min([V_min,V_max-0.3]); % This is to make sure there is a non-zero interval for the scheduling
+    v_max=max([V_max, V_min+0.6]);  % This can be improved. Interval is set ad-hoc
+    if (V_max-V_min)<0.05 
+        disp('Warning, no speed variation in Vref, scheduling matrices becomes identical'); 
+        disp('Simulation does not work in this case.');
+    end
 
 V_stepSize=3;
 
@@ -113,12 +151,12 @@ B_t=zeros(V_n,1);
 C_t=zeros(V_n,1);
 D_t=zeros(V_n,1);
 
-load('Q_and_R_backup_red_bike.mat');
+
 
 format long
 for i=1: V_n
     % Kalman filtering for both cases - with/without GPS - 
-    [K_GPS(i,:,:),K_noGPS(i,:,:),counter,A_d(i,:,:),B_d(i,:,:),C(i,:,:),D(i,:,:)] = KalmanFilter(V(i),h,lr,lf,lambda,g,c,h_imu,Ts,Q,R);
+    [K_GPS(i,:,:),K_noGPS(i,:,:),counter,A_d(i,:,:),B_d(i,:,:),C(i,:,:),D(i,:,:)] = KalmanFilter(V(i),hh,lr,lf,lambda,gg,cc,h_imu,Ts,Q,R);
 
     % Transfer function in heading in wrap traj
     num = 1;
@@ -151,7 +189,7 @@ K_noGPSMax = squeeze(K_noGPS(2,:,:));
 % GainsTable = table(V',K_GPS,K_noGPS,A_d,B_d,C,D, 'VariableNames', {'V','K_GPS','K_noGPS','A_d','B_d','C','D'});
 
 % Discretize the ss 
-% % Used in Simulink
+% % Used in Simulink ??? but also in LabView???
 Ad_t = (eye(size(A_t))+Ts*A_t);   % A_t and B_t are calculated on gains table section above.
 Bd_t = B_t*Ts;
 
@@ -167,9 +205,10 @@ C_tMax = C_t(2);
 D_tMin = D_t(1);
 D_tMax = D_t(2);
 
-%% Load params to labview
+%% Defineobject params on the format required by labview
 
 % Matrix (3,7) of parameters
+% TODO use the unpacked bike parameters, ie remove "bike_params."
 params = zeros(3,7);
 params(1,1) = bike_params.steer_motor_gear_rat;
 params(1,2) = bike_params.steer_pully_gear_rat;
@@ -210,11 +249,11 @@ matrixmat = [A_dMin'; A_dMax'; B_dMin; B_dMax; C_Min'; C_Max'; D_Min; D_Max; K_G
 prompt = {'Enter the bike type','Enter the matrix name.'};
 dlgtitle = 'Parameters matrix';
 dims = [1 40];
-definput = {'red_bike','matrixmat'};
+definput = {biketype,filename_matrixmat};
 answer = inputdlg(prompt,dlgtitle,dims,definput);
-type=string(answer{1,1});
-name=string(answer{2,1});
-filename_matrix = strcat('Parameters_matrixmat\',type,'\',name,'.csv');
+biketype=string(answer{1,1});
+filename=string(answer{2,1});
+filename_matrix = strcat(parameters4bike,biketype,'\',filename,'.csv');
 dlmwrite(filename_matrix, matrixmat, 'delimiter', ',', 'precision', 10);
 
-csvwrite('AACircle20m.csv',[Xref,Yref,Psiref,Vref])
+csvwrite(trajectoryLabview,[Xref,Yref,Psiref,Vref])

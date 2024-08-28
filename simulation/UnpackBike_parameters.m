@@ -1,11 +1,11 @@
-function [hh,lr,lf,lambda,cc,mm,h_imu,Tt]=UnpackBike_parameters(bike_params)
+function [hh,lr,lf,lambda,cc,mm,h_imu,Tt,r_wheel]=UnpackBike_parameters(bike_params)
 %[hh,lr,lf,lambda,cc,mm,h_imu,Tt]=UnpackBike_parameters(bike_params)
 %
 % UnpackBike_parameters unpacks the individual bike parameters from the
 % data structure bike_params
 %
 % See LoadBikeParameters for details of bike_params
-% T is a matrix describing the position and direction of the IMU
+% Tt is a matrix describing the position and direction of the IMU
 
 hh = bike_params.h_mod;
 lr = bike_params.lr_mod;
@@ -14,8 +14,10 @@ lambda = bike_params.lambda_mod;
 cc = bike_params.c_mod;
 mm= bike_params.m_mod;
 h_imu = bike_params.IMU_height_mod;
+r_wheel=bike_params.r_wheel;
 
-% Correction IMU   TODO: explain
+% Correction IMU   TODO: explain, probably for ajusting of how the IMU is
+% mounted on the bike
 IMU_x = bike_params.IMU_x_mod;
 IMU_roll = bike_params.IMU_roll_mod;
 IMU_pitch = bike_params.IMU_pitch_mod;            
