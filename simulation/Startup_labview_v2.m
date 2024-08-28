@@ -28,10 +28,10 @@ load('Q_and_R_backup_red_bike.mat'); % read Q and R used in the Kalman filter
 
 % file where the reference trajectory can be read, on format according to
 % Refgeneration.m". That format is presently used in simulation.
-trajectotyfile='AATrajCorrectedSpeed.csv';
+trajectotyfile='v26R30.csv';
 
 % Store trajectory on format for Labview in the following file
-trajectoryLabview='AACircle20m.csv';
+trajectoryLabview='Rosetv26R30.csv';
 
 % Bike parameters for the specific reference trajectory are stored with
 % indicated filename in directory given by "parameters4bike" \ "biketype"
@@ -40,7 +40,7 @@ filename_matrixmat='matrixmat';
 
 % Choose trajectory, can be done using Main_sim, any other, m-file or reading from file
 % Load trajectory file
-%    [Xref,Yref,Psiref,Vref,t]=Refgeneration({'x','y','v'},trajectoryfileSim);
+%    [Xref,Yref,Psiref,Vref,t]=Refgeneration({'x','y','v'},trajectoryfile);
 
 
 % General Parameters
@@ -52,8 +52,6 @@ filename_matrixmat='matrixmat';
 % Load the parameters of the specified bicycle
     bike_params = LoadBikeParameters(bike);
 
-% Load trajectory file
-%    [Xref,Yref,Psiref,Vref,t]=Refgeneration({'x','y','v'},trajectoryfileSim);
 
 % Constant Speed needed for lqr [m/s]
     v_init = Vref(1); 

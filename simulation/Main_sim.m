@@ -34,7 +34,7 @@ clc;
     hor_dis = 10; %tra cosa?
 
 %Constant Speed [m/s]
-     vv = 3;    
+     vv = 2.6;    
 
 % Open the Simulink Model
     open([model '.slx']);
@@ -117,7 +117,13 @@ scale = 40;
 
 % [Xref,Yref,Psiref] = Trajectory(Run_tests);
 
-[Xref,Yref,Psiref] = ReferenceGenerator(type,ref_dis,N,scale);
+%[Xref,Yref,Psiref] = ReferenceGenerator(type,ref_dis,N,scale);
+
+
+ref_dis = 0.3;
+laps=10;
+lL=30; % length of straigt segment between the turns
+[Xref,Yref,Psiref] = ReferenceGenerator('roset',ref_dis,lL,laps);
 
 % read trajectory from file
 %[Xref,Yref,Psiref,Vref,ttt]=Refgeneration({'x','y','v'},'AATrajCorrectedSpeed.csv');

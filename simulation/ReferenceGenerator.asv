@@ -20,52 +20,51 @@ function [Xref,Yref,Psiref] = ReferenceGenerator(type,ref_dis,N,scale)
     t = (0:(N-1))';
     switch type          
         case 'line'
-            xref = t*ref_dis;
-            yref = 0*ones(1,N);
+            Xref = t*ref_dis;
+            Yref = 0*ones(N,1);
  %           psiref=atan2(yref(2:N)-yref(1:N-1),xref(2:N)-xref(1:N-1)); 
 
         case 'sharp_turn'
             t = t*ref_dis;
-            xref = 7*t;
-            yref = 5*[0*(1:300) 0.01*(1:800) 8*ones(1,1000)];
+            Xref = 7*t;
+            Yref = 5*[0*(1:300) 0.01*(1:800) 8*ones(1,1000)];
 %            psiref=atan2(yref(2:N)-yref(1:N-1),xref(2:N)-xref(1:N-1)); 
             
         case 'smooth_curve'
             t = t*ref_dis;
-            xref = (300-t).*sin(0.15*t);
-            yref= -(300-t).*cos(0.15*t)+300;
+            Xref = (300-t).*sin(0.15*t);
+            Yref= -(300-t).*cos(0.15*t)+300;
  %           psiref=atan2(yref(2:N)-yref(1:N-1),xref(2:N)-xref(1:N-1)); 
             
         case 'circle'
             t = t*ref_dis/scale;
-            xref = scale*sin(t);
-            yref= -scale*cos(t)+30;
+            Xref = scale*sin(t);
+            Yref= -scale*cos(t)+30;
   %          psiref=atan2(yref(2:N)-yref(1:N-1),xref(2:N)-xref(1:N-1)); 
             
         case 'infinite'
-            t = (0:(N-1))*ref_dis/scale;;
-            xref = scale*cos(t);
-            yref = scale*sin(2*t) / 2;
+            t = t*ref_dis/scale;;
+            Xref = scale*cos(t);
+            Yref = scale*sin(2*t) / 2;
    %         psiref =atan2(yref(2:N)-yref(1:N-1),xref(2:N)-xref(1:N-1)); 
             
         case 'ascent_sin'
-            t = (0:(N-1))*ref_dis;
-            xref = t*ref_dis;
-            yref = 8*sin(0.02*t+0.0004*t.*t);
+            t = t*ref_dis;
+            Xref = t*ref_dis;
+            Yref = 8*sin(0.02*t+0.0004*t.*t);
   %          psiref=atan2(yref(2:N)-yref(1:N-1),xref(2:N)-xref(1:N-1)); 
         case 'wiggle'
             Amp = 10;
             fre = 0.01;
-            t = (0:(N-1));
-            xref = t*ref_dis;
-            yref = Amp*sin(fre*t);
+            Xref = t*ref_dis;
+            Yref = Amp*sin(fre*t);
   %          psiref=atan2(yref(2:N)-yref(1:N-1),xref(2:N)-xref(1:N-1));
         case 'test'
-            t = (0:(N-1))*ref_dis;
+            t = t*ref_dis;
             dis = 1;
             y= 1;
-            xref = dis*[1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20];
-            yref = [0 0 0 0 0 0 0 0 0.333*y 0.666*y y y y y y y y y y y];
+            Xref = dis*[1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20]';
+            Yref = [0 0 0 0 0 0 0 0 0.333*y 0.666*y y y y y y y y y y y]';
    %         psiref=atan2(yref(2:N)-yref(1:N-1),xref(2:N)-xref(1:N-1)); 
         case 'roset'
             %
@@ -78,10 +77,10 @@ function [Xref,Yref,Psiref] = ReferenceGenerator(type,ref_dis,N,scale)
             % Number of reference points
             N=round(ll/2/ref_dis);
             [XrefL,YrefL] = ReferenceGenerator('line',ref_dis,N,scale);
-            Xref=XrefL
-            Yref=YrefL
+            Xref=XrefL;
+            Yref=YrefL;
             
-            % rotated version 90 degrees
+            % rotated version -90 degrees
             rot=[0 1;-1 0];
             ref2=rot*[Xref Yref]';
             Xref2=ref2(1,:)';
@@ -92,35 +91,44 @@ function [Xref,Yref,Psiref] = ReferenceGenerator(type,ref_dis,N,scale)
             
             [Xref,Yref]=concatenate(Xref(1:end-1),Yref(1:end-1),Xref3,Yref3);
             %[Xref,Yref]=concatenate(Xref,Yref,Xref2,Yref2);
-            [Xref]=[Xref;Xref2];
-            [Yref]=[Yref;Yref2];
+            Xrefq=[Xref;Xref2]; % keep half eight to be used later
+            Yrefq=[Yref;Yref2];
+            Xref=Xrefq;
+            Yref=Yrefq;
             
-            % make full eight by adding mirrow in origine
-            [Xref]=[Xref;-Xref];
-            [Yref]=[Yref;-Yref];
-            % make full rosett by mirrow in y-axis
-            
+            % make full eight by rotate
+            [Xreftemp]=[Xref;-Yref];
+            [Yref]=[Yref;-Xref];
+            Xref=Xreftemp;
+            % make full rosett by mirrow in y-axis            
             [Xref]=[Xref;Xref];
             [Yref]=[Yref;-Yref];
-            
-            % number of full cycles
+
+            % after the eight, add a quarter to change directions
+            Zref1=[Xref Yref;
+                Xrefq -Yrefq]';
+            Zref=Zref1;
+         
+            % number of full cycles, rotate 90 degres and add
             for kk=1:laps
-                [Xref]=[Xref;Xref];
-                [Yref]=[Yref;Yref];
+              Zref=[Zref [0 1;-1 0]^kk*Zref1];
             end
+            Zref=Zref';
+            [Xref]=Zref(:,1);
+            [Yref]=Zref(:,2);
+
 
     end
     
-   psiref=atan2(yref(2:N)-yref(1:N-1),xref(2:N)-xref(1:N-1));
+   Psiref=atan2(Yref(2:end)-Yref(1:end-1),Xref(2:end)-Xref(1:end-1));
 
-    Xref=xref';%change row into column
-    Yref=yref';%change row into column
-    Psiref=psiref';%change row into column
+    % Xref=xref';%change row into column
+    % Yref=yref';%change row into column
+    % Psiref=psiref';%change row into column
 
     %start in origine
     Xref=Xref-Xref(1);
     Yref=Yref-Yref(1);
-    
     Psiref = [Psiref(1); Psiref];
     % %Duplicate first value for first iteration in simulink (For proper delay value)
     % Xref = [Xref(1); Xref];

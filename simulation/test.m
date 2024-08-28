@@ -69,9 +69,10 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-laps=3§;
-length=10;
-[Xref,Yref,Psiref] = ReferenceGenerator('roset',ref_dis,length,laps);
+ref_dis = 0.3;
+laps=10;
+lL=10;
+[Xref,Yref,Psiref] = ReferenceGenerator('roset',ref_dis,lL,laps);
 
 
 plot(Xref,Yref,'o')

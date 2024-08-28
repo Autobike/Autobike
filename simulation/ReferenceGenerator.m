@@ -80,7 +80,7 @@ function [Xref,Yref,Psiref] = ReferenceGenerator(type,ref_dis,N,scale)
             Xref=XrefL;
             Yref=YrefL;
             
-            % rotated version 90 degrees
+            % rotated version -90 degrees
             rot=[0 1;-1 0];
             ref2=rot*[Xref Yref]';
             Xref2=ref2(1,:)';
@@ -91,22 +91,32 @@ function [Xref,Yref,Psiref] = ReferenceGenerator(type,ref_dis,N,scale)
             
             [Xref,Yref]=concatenate(Xref(1:end-1),Yref(1:end-1),Xref3,Yref3);
             %[Xref,Yref]=concatenate(Xref,Yref,Xref2,Yref2);
-            [Xref]=[Xref;Xref2];
-            [Yref]=[Yref;Yref2];
+            Xrefq=[Xref;Xref2]; % keep half eight to be used later
+            Yrefq=[Yref;Yref2];
+            Xref=Xrefq;
+            Yref=Yrefq;
             
-            % make full eight by adding mirrow in origine
-            [Xref]=[Xref;-Xref];
-            [Yref]=[Yref;-Yref];
-            % make full rosett by mirrow in y-axis
-            
+            % make full eight by rotate
+            [Xreftemp]=[Xref;-Yref];
+            [Yref]=[Yref;-Xref];
+            Xref=Xreftemp;
+            % make full rosett by mirrow in y-axis            
             [Xref]=[Xref;Xref];
             [Yref]=[Yref;-Yref];
-            
-            % number of full cycles
+
+            % after the eight, add a quarter to change directions
+            Zref1=[Xref Yref;
+                Xrefq -Yrefq]';
+            Zref=Zref1;
+         
+            % number of full cycles, rotate 90 degres and add
             for kk=1:laps
-                [Xref]=[Xref;Xref];
-                [Yref]=[Yref;Yref];
+              Zref=[Zref [0 -1;1 0]^kk*Zref1];
             end
+            Zref=Zref';
+            [Xref]=Zref(:,1);
+            [Yref]=Zref(:,2);
+
 
     end
     
