@@ -70,8 +70,8 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 ref_dis = 0.3;
-laps=10;
-lL=10;
+laps=4;
+lL=30;
 [Xref,Yref,Psiref] = ReferenceGenerator('roset',ref_dis,lL,laps);
 
 

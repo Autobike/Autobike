@@ -31,7 +31,7 @@ load('Q_and_R_backup_red_bike.mat'); % read Q and R used in the Kalman filter
 trajectotyfile='v26R30.csv';
 
 % Store trajectory on format for Labview in the following file
-trajectoryLabview='Rosetv26R30.csv';
+trajectoryLabview='Rosetv26R30half.csv';
 
 % Bike parameters for the specific reference trajectory are stored with
 % indicated filename in directory given by "parameters4bike" \ "biketype"
