@@ -121,7 +121,7 @@ scale = 40;
 
 
 ref_dis = 0.3;
-laps=10;
+laps=4;
 lL=30; % length of straigt segment between the turns
 [Xref,Yref,Psiref] = ReferenceGenerator('roset',ref_dis,lL,laps);
 
