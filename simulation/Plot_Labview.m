@@ -5,7 +5,8 @@ close all
 clc
 
 %% Load Data
-Labview_data=readtable('Labview_data\data.csv');
+Labview_data=readtable('Labview_data\data.csv'); % Preferably keep this always the same for simplicity. Input your log data there.
+Table_traj = readtable('Traj_ref_test/new_trajectoryfile.csv'); % Input Reference trajectory path and name
 
 % set the initial global coordinate system for gps coordinates
     gps_delay = 5;
@@ -66,12 +67,13 @@ gpsflag = [Labview_data.Time Labview_data.GNSSFlag];
 start_point = 1;
 end_point = length(measurementsGPS)-1;
 
+
 % Trajectory
 fig = figure();
 plot3(Labview_data.StateEstimateX_m_(start_point:end_point) - X(1) ,Labview_data.StateEstimateY_m_(start_point:end_point) - Y(1),Labview_data.Time(start_point:end_point))
 hold on
 plot3(measurementsGPS(start_point:end_point,2) - X(1),measurementsGPS(start_point:end_point,3) - Y(1),Labview_data.Time(start_point:end_point),'*')
-% plot3(Table_traj.Var1(:) - X(1),Table_traj.Var2(:) - Y(1),1:length(Table_traj.Var1(:))) %,'Trajectory ref' 
+plot3(Table_traj.Var1(:)-Table_traj.Var1(1),Table_traj.Var2(:)-Table_traj.Var2(1),1:length(Table_traj.Var1(:))) %,'Trajectory reference'
 % plot3(sim_data.X_estimated(:,1), % sim_data.Y_estimated(:,1),sim_data.Time(:,1)) %'Estimated sim'
 view(0,90)
 xlabel('X position (m)')

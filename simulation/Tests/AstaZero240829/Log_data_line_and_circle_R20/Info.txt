@@ -1,0 +1,2 @@
+Red bike
+Straight line + circle. Radius 20 meters. Full reference trajectory inputted.

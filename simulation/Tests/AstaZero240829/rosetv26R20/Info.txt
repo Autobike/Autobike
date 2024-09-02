@@ -1,0 +1,7 @@
+Redbike
+8shape- Rosette, Half of the reference trajectory 
+inputted as reference trajectory, 20 meters radius.
+
+space 40x40 meters
+start in the midle
+v=2.6

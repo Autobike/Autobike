@@ -1,0 +1,6 @@
+2164609 INFO Run started!
+2196684 INFO Steering encoder count was reset
+2505764 INFO Steering angle limit was hit
+2506544 INFO Steering angle limit was hit
+2507544 INFO Steering angle limit was hit
+2509316 ERROR myRIO v1.0 Read Encoder.vi (-363005)

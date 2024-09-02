@@ -25,6 +25,8 @@
 % % another curve in oposite direction
 % [Xref,Yref]=concatenate(Xref,Yref,Xref2,-Yref2);
 % 
+% Here is a change to check GIT
+%
 % % addapt 'nl' last point to make it connect to the spltart point, and then a
 % % periodical trajectory can be made by repeating
 % 

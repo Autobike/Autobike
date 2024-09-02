@@ -1,0 +1,8 @@
+Red bike
+20 meters line and then 8 shapes -rosette, full reference trajectory was inputted, 
+10 meters radius.
+
+space 20x20 meters
+start in the middle
+v=2.6
+Might be too fast
