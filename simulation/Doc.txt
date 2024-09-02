@@ -1,0 +1,3 @@
+space 60x60 meters
+start in the midle
+v=2.6
